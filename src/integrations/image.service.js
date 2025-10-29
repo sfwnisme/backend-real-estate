@@ -12,6 +12,14 @@ const appError = new AppError();
 
 const imageServices = module.exports;
 
+/**
+ * 
+ * @param {File} file 
+ * @param {ObjectId} ownerId 
+ * @param {Model} ownerModel 
+ * @param {enum} bucketDir 
+ * @returns 
+ */
 imageServices.createImage = async (
   file,
   ownerId,
