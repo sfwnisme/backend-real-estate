@@ -37,7 +37,7 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
 
   const createdProperty = new Property({ ...body, slug: generateSlug });
   await createdProperty.save();
-  const populatedProperty = await Property.findById(createdProperty._id).lean();
+  const propertyCreation = await Property.findById(createdProperty._id).lean();
 
   res
     .status(201)
@@ -46,7 +46,7 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The property created successfully",
-        populatedProperty
+        propertyCreation
       )
     );
 });
