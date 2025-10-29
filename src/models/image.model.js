@@ -40,6 +40,10 @@ const imageSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    isTemp: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
