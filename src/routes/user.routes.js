@@ -4,14 +4,14 @@ const controllers = require('../controllers/user.controllers');
 const { registerValidation, loginValidation, updateUserValidation } = require('../middlewares/validationSchema');
 const verifyToken = require('../middlewares/verifyToken');
 const authorizedRole = require('../middlewares/authorizedRole');
-const userRoles = require('../config/userRoles.config')
+const {USER_ROLES} = require('../config/enum.config')
 
 // router.use(verifyToken)
 
 router.route('/')
   .get(
     verifyToken,
-    authorizedRole(...Object.values(userRoles)),
+    authorizedRole(...Object.values(USER_ROLES)),
     controllers.getAllUsers
   )
 
@@ -24,7 +24,7 @@ router.route('/me')
 router.route('/register')
   .post(
     verifyToken,
-    authorizedRole(userRoles.ADMIN, userRoles.MANAGER),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     registerValidation(),
     controllers.register
   )
@@ -42,13 +42,13 @@ router.route('/:userId')
   )
   .patch(
     verifyToken,
-    authorizedRole(userRoles.ADMIN, userRoles.MANAGER),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     updateUserValidation(),
     controllers.updateUser
   )
   .delete(
     verifyToken,
-    authorizedRole(userRoles.ADMIN),
+    authorizedRole(USER_ROLES.ADMIN),
     controllers.deleteUser
   )
 

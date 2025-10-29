@@ -9,7 +9,7 @@ module.exports = (asyncFunction) => {
     // its params come from the application
     asyncFunction(req, res, next).catch((error) => {
       // the next() middleware is the application's not the asyncFunction's
-      next(error);
+      next({error});
     });
   };
 };

@@ -1,5 +1,5 @@
 const { formatApiResponse } = require("../utils/response");
-const statusText = require("../config/statusText.config.js");
+const { STATUS_TEXT } = require("../config/enum.config.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const Property = require("../models/property.model.js");
 const { slugGenerator } = require("../utils/utils.js");
@@ -13,7 +13,7 @@ propertyControllers.getProperties = asyncWrapper(async (req, res) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "data fetched successfully",
         properties
       )
@@ -27,7 +27,7 @@ propertyControllers.getProperty = asyncWrapper(async (req, res, next) => {
   res
     .status(200)
     .json(
-      formatApiResponse(200, statusText.SUCCESS, "operation success", property)
+      formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", property)
     );
 });
 
@@ -44,7 +44,7 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
     .json(
       formatApiResponse(
         201,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "The property created successfully",
         populatedProperty
       )
@@ -68,7 +68,7 @@ propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "operation success",
         updatedProperty
       )
@@ -84,7 +84,7 @@ propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "property deleted successfully",
         deletedProperty
       )

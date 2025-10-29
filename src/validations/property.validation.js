@@ -1,10 +1,9 @@
 const { param, check, body } = require("express-validator");
-const Property = require("../src/models/property.model");
+const Property = require("../models/property.model");
 const {
   mustBeNumberMsg,
-  checkPropertyTitleUniqueOnUpdate,
-} = require("../src/utils/validation.utils");
-const { PROPERTY_TYPE, PROPERTY_STATUS } = require("../src/config/enum.config");
+} = require("../utils/validation.utils");
+const { PROPERTY_TYPE, PROPERTY_STATUS } = require("../config/enum.config");
 const {
   isValidateYearBuilt,
   documentExists,
@@ -76,7 +75,7 @@ propertyValidation.createPropertyValidation = () => {
             PROPERTY_STATUS
           )}]`
       ),
-    body("images").notEmpty().isString(),
+    // body("images").notEmpty().isString(),
     body("features").optional().isString(),
     body("hide")
       .optional()
@@ -151,7 +150,6 @@ propertyValidation.updatePropertyValidation = () => {
         (value) =>
           `"${value}" property name length should contain 15 to 120 charachters`
       )
-      // .custom(checkPropertyTitleUniqueOnUpdate)
       .custom((value, { req }) =>
         checkDocumentTitleUniqueOnUpdate(
           value,
@@ -202,7 +200,7 @@ propertyValidation.updatePropertyValidation = () => {
             PROPERTY_STATUS
           )}]`
       ),
-    body("images").optional().isString(),
+    // body("images").optional().isString(),
     body("features").optional().isString(),
     body("hide")
       .optional()

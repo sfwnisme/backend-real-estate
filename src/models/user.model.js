@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
-const validator = require('validator')
-const userRoles = require('../config/userRoles.config')
+const validator = require('validator');
+const { USER_ROLES } = require('../config/enum.config');
+// const USER_ROLES = require("../config/enums.config")
+// const USER_ROLES = require('../config/enums.config.js')
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -19,8 +21,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: Object.values(userRoles),
-    default: userRoles.VIEW_ONLY
+    enum: Object.values(USER_ROLES),
+    default: USER_ROLES.VIEW_ONLY
   }
 },
   {

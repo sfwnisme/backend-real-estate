@@ -7,7 +7,7 @@
 //----------------------------
 
 const JWT = require('jsonwebtoken')
-const removeObjectKeys = require('./removeObjectKeys')
+const { removeObjectKeys } = require('./utils')
 
 /**
  * 

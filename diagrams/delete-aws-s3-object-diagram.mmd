@@ -1,0 +1,15 @@
+flowchart TD
+    A[Start Delete Object] --> B[Check if object _id is valid]
+    B -->|Invalid _id| Z[Return error: invalid object ID]
+    B -->|Valid _id| C[Check if object doc exists in database]
+    C -->|Not found| Z1[Return error: object doc not found in DB]
+    C -->|Exists| D[Check if object exists in AWS S3 bucket]
+    D -->|Not found in S3| E[Delete object document from DB]
+    E --> F[Return message: Object did not exist in S3, but was in DB, so deleted from DB]
+    D -->|Exists in S3| G[Delete object from AWS S3 bucket]
+    G --> H[Delete object document from DB]
+    H --> I[Return message: Object deleted successfully]
+    Z --> J[End]
+    Z1 --> J
+    F --> J
+    I --> J[End]

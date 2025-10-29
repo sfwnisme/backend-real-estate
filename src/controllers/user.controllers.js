@@ -1,16 +1,16 @@
-const userRoles = require('../config/userRoles.config')
+const {USER_ROLES} = require('../config/enum.config.js')
 const User = require('../models/user.model')
 const { formatApiResponse } = require('../utils/response');
 // const response = require('../utils/response')
-const statusText = require('../config/statusText.config.js')
+const { STATUS_TEXT } = require('../config/enum.config.js')
 const createPasswordHasher = require('../utils/createPasswordHasher.js')
 const hashPassword = createPasswordHasher(10)
 const AppError = require('../utils/appError.js')
 const asyncWrapper = require('../middlewares/asyncWrapper.js')
 const bcrypt = require('bcryptjs')
 const { validationResult, matchedData } = require('express-validator')
-const generateAuthResponse = require('../utils/generateAuthResponse.js')
-const removeObjectKeys = require('../utils/removeObjectKeys.js')
+const generateAuthResponse = require('../utils/generateAuthResponse.js');
+const { removeObjectKeys } = require('../utils/utils.js');
 const appError = new AppError()
 
 const getAllUsers = asyncWrapper(
@@ -19,7 +19,7 @@ const getAllUsers = asyncWrapper(
     res.status(200).json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         'data fetched successfully',
         allUsers
       ))
@@ -29,13 +29,13 @@ const getAllUsers = asyncWrapper(
 const getSingleUser = asyncWrapper(
   async (req, res, next) => {
     const { userId } = req.params
-    const user = await User.findOne({ _id: userId })
+    const user = await User.findOne({ _id: userId }).select("-password")
     if (!user) {
-      appError.create(400, statusText.FAIL, "The requested user account doesn't exist. Kindly reach out to your administrator to create one.")
+      appError.create(400, STATUS_TEXT.FAIL, "The requested user account doesn't exist. Kindly reach out to your administrator to create one.")
       return next(appError)
     }
     console.log('decoded+++++++++++', req.user)
-    res.status(200).json(formatApiResponse(200, statusText.SUCCESS, "operation success", user))
+    res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", user))
   }
 )
 
@@ -46,7 +46,7 @@ const getCurrentUser = asyncWrapper(
     console.log(currentUser)
 
     const user = removeObjectKeys(['iat', 'exp'], currentUser)
-    res.status(200).json(formatApiResponse(200, statusText.SUCCESS, 'success', user))
+    res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, 'success', user))
     // next()
   }
 )
@@ -58,22 +58,22 @@ const register = asyncWrapper(
 
     const user = await User.findOne({ email })
     if (user) {
-      appError.create(400, statusText.FAIL, "The requested user account already exist. Kindly try another email address")
+      appError.create(400, STATUS_TEXT.FAIL, "The requested user account already exist. Kindly try another email address")
       return next(appError)
     }
 
 
     if (!errors.isEmpty()) {
-      appError.create(400, statusText.FAIL, errors.array())
+      appError.create(400, STATUS_TEXT.FAIL, errors.array())
       return next(appError)
     }
 
     const hashedPassword = await hashPassword(password)
 
-    const registeredUser = new User({ name, email, password: hashedPassword, role: role || userRoles.VIEW_ONLY })
+    const registeredUser = new User({ name, email, password: hashedPassword, role: role || USER_ROLES.VIEW_ONLY })
     await registeredUser.save()
     const authUser = generateAuthResponse(registeredUser, false)
-    res.status(201).json(formatApiResponse(201, statusText.SUCCESS, 'the user created successfully', authUser))
+    res.status(201).json(formatApiResponse(201, STATUS_TEXT.SUCCESS, 'the user created successfully', authUser))
   }
 )
 
@@ -83,26 +83,26 @@ const login = asyncWrapper(
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      appError.create(400, statusText.FAIL, errors.array())
+      appError.create(400, STATUS_TEXT.FAIL, errors.array())
       return next(appError)
     }
 
     let user = await User.findOne({ email }, { "__v": false })
 
     if (!user) {
-      appError.create(400, statusText.FAIL, "The requested user account doesn't exist. Kindly reach out to your administrator to create one.")
+      appError.create(400, STATUS_TEXT.FAIL, "The requested user account doesn't exist. Kindly reach out to your administrator to create one.")
       return next(appError)
     }
 
     const passwordIsMatch = await bcrypt.compare(password, user.password)
 
     if (user && !passwordIsMatch) {
-      appError.create(401, statusText.FAIL, 'password is not correct')
+      appError.create(401, STATUS_TEXT.FAIL, 'password is not correct')
       return next(appError)
     }
 
     const authUser = generateAuthResponse(user)
-    res.status(200).json(formatApiResponse(200, statusText.SUCCESS, 'operation success', authUser))
+    res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, 'operation success', authUser))
   }
 )
 
@@ -112,13 +112,13 @@ const updateUser = asyncWrapper(
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      appError.create(400, statusText.FAIL, errors.array())
+      appError.create(400, STATUS_TEXT.FAIL, errors.array())
       return next(appError)
     }
 
     const user = await User.findOne({ _id: userId });
     if (!user) {
-      appError.create(404, statusText.FAIL, `user [ ${userId} ] is not exist`)
+      appError.create(404, STATUS_TEXT.FAIL, `user [ ${userId} ] is not exist`)
       return next(appError)
     }
 
@@ -133,11 +133,11 @@ const updateUser = asyncWrapper(
 
     // this condition does not working
     if (!isUpdated) {
-      appError.create(400, statusText.FAIL, 'no changes made')
+      appError.create(400, STATUS_TEXT.FAIL, 'no changes made')
       return next(appError)
     }
 
-    res.status(200).json(formatApiResponse(200, statusText.SUCCESS, "operation success", updatedUser))
+    res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", updatedUser))
   }
 )
 
@@ -147,11 +147,11 @@ const deleteUser = asyncWrapper(
     const { userId } = req.params
     const user = await User.findOne({ _id: userId })
     if (!user) {
-      res.status(401).json(formatApiResponse(401, statusText.FAIL, "user not exist"))
+      res.status(401).json(formatApiResponse(401, STATUS_TEXT.FAIL, "user not exist"))
     }
 
     const deletedUser = await User.deleteOne({ _id: userId })
-    return res.status(200).json(formatApiResponse(200, statusText.SUCCESS, 'delete successfully', deletedUser))
+    return res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, 'delete successfully', deletedUser))
   }
 )
 
@@ -159,10 +159,10 @@ const deleteUsers = asyncWrapper(
   async (req, res) => {
     const { userIds } = req.body
     if (userIds.length === 0 || !Array.isArray(userIds)) {
-      res.status(401).json(formatApiResponse(401, statusText.FAIL, "no user ids exist"))
+      res.status(401).json(formatApiResponse(401, STATUS_TEXT.FAIL, "no user ids exist"))
     }
     const deletedUsers = await User.deleteMany({ _id: { $in: userIds } })
-    return res.status(200).json(formatApiResponse(200, statusText.SUCCESS, 'delete successfully', deletedUsers))
+    return res.status(200).json(formatApiResponse(200, STATUS_TEXT.SUCCESS, 'delete successfully', deletedUsers))
   }
 )
 

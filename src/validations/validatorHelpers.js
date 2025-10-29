@@ -2,6 +2,12 @@ const { check } = require("express-validator");
 
 const validatorHelpers = module.exports;
 
+/**
+ * property yearBuilt field is a number
+ * this function valid years range
+ * @param {string} value
+ * @returns
+ */
 validatorHelpers.isValidateYearBuilt = (value) => {
   const minValue = 1900;
   const maxValue = new Date().getFullYear() + 10;
@@ -67,7 +73,6 @@ validatorHelpers.checkObjectId = (field, model) => {
   ];
 };
 
-
 /**
  * Checks if the document title is unique on update.
  * @param {string} value - The new title to check uniqueness for.
@@ -75,7 +80,11 @@ validatorHelpers.checkObjectId = (field, model) => {
  * @param {string} docId - The id of the document being updated.
  * @returns {Promise<boolean>} - Returns true if unique, throws error if not.
  */
-validatorHelpers.checkDocumentTitleUniqueOnUpdate = async function(value, model, docId) {
+validatorHelpers.checkDocumentTitleUniqueOnUpdate = async function (
+  value,
+  model,
+  docId
+) {
   const newTitle = value ?? "";
   const modelValue = await model.findOne({
     _id: { $ne: docId },

@@ -23,8 +23,8 @@ app.use(
 
 // import response handlers
 const { formatApiResponse } = require("./utils/response");
-const statusText = require("./config/statusText.config");
 const { setUpAppRoutes } = require("./routes/setUpAppRoutes");
+const { STATUS_TEXT } = require("./config/enum.config");
 
 // all the application routes
 setUpAppRoutes(app);
@@ -39,7 +39,7 @@ app.all("*", (req, res, next) => {
     .json(
       formatApiResponse(
         404,
-        statusText.ERROR,
+        STATUS_TEXT.ERROR,
         "page not found",
         "the page you are trying to access is not found"
       )
@@ -56,7 +56,7 @@ app.use((error, req, res, next) => {
     .json(
       formatApiResponse(
         error.statusCode || 500,
-        error.statusText,
+        error.STATUS_TEXT,
         error.message,
         "🔻 GLOBAL ERROR"
       )

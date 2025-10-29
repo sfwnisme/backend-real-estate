@@ -60,10 +60,6 @@ const propertySchema = new mongoose.Schema(
       required: true,
       default: PROPERTY_STATUS.FOR_SALE,
     },
-    images: {
-      type: String,
-      required: true,
-    },
     features: {
       type: String,
       required: false,

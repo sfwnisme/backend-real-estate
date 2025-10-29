@@ -2,8 +2,8 @@
 const { body, param } = require("express-validator");
 
 // Assuming these utilities and enums are available:
-const BlogPost = require("../src/models/blog-post.model");
-const { BLOG_POST_STATUS } = require("../src/config/enum.config");
+const BlogPost = require("../models/blog-post.model");
+const { BLOG_POST_STATUS } = require("../config/enum.config");
 const {
   documentExists,
   checkSingleRequestByParam,
@@ -53,8 +53,8 @@ blogValidation.createBlogPostValidation = () => {
       ),
     body("coverImage")
       .optional({ nullable: true, checkFalsy: true }) // Matches your schema's default: ''
-      .isString()
-      .withMessage("cover image must be a string"),
+      .isMongoId()
+      .withMessage("cover image must be a mongoId"),
 
     body("status")
       .notEmpty()
@@ -103,8 +103,8 @@ blogValidation.createBlogPostValidation = () => {
 
     body("meta.ogImage")
       .optional({ nullable: true, checkFalsy: true })
-      .isString()
-      .withMessage(mustBeStringMsg("Meta ogImage")),
+      .isMongoId()
+      .withMessage("must be mongoId"),
   ];
 };
 
@@ -154,8 +154,8 @@ blogValidation.updateBlogPostValidation = () => {
       ),
     body("coverImage")
       .optional({ nullable: true, checkFalsy: true }) // Matches your schema's default: ''
-      .isString()
-      .withMessage("cover image must be a string"),
+      .isMongoId()
+      .withMessage("cover image must be a mongoId"),
 
     body("status")
       .optional()
@@ -205,8 +205,8 @@ blogValidation.updateBlogPostValidation = () => {
 
     body("meta.ogImage")
       .optional({ nullable: true, checkFalsy: true })
-      .isString()
-      .withMessage(mustBeStringMsg("Meta ogImage")),
+      .isMongoId()
+      .withMessage("must be an object id"),
   ];
 };
 

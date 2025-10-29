@@ -54,8 +54,8 @@ const BlogPostSchema = new mongoose.Schema(
       required: [true, "Content is required"],
     },
     coverImage: {
-      type: String,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Image",
       default: "", // Allow empty if not strictly required
     },
     status: {
@@ -67,7 +67,7 @@ const BlogPostSchema = new mongoose.Schema(
     },
 
     // --- NESTED DATA ---
-
+    
     meta: {
       type: MetaSchema,
       default: {},
@@ -93,6 +93,7 @@ const BlogPostSchema = new mongoose.Schema(
   {
     timestamps: true, // Automatically manages createdAt and updatedAt
     // collection: 'blog_post' // Optional: Define a custom collection name
+    versionKey: false
   }
 );
 

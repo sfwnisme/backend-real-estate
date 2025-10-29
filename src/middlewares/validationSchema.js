@@ -1,5 +1,5 @@
 const { body, param } = require("express-validator")
-const userRoles = require("../config/userRoles.config")
+const {USER_ROLES} = require("../config/enum.config")
 
 const registerValidation = () => {
   return [
@@ -49,8 +49,8 @@ const updateUserValidation = () => {
       .withMessage('should be a valid email'),
     body('role')
       .optional()
-      .isIn(Object.values(userRoles))
-      .withMessage(`available roles: ${Object.values(userRoles)}`)
+      .isIn(Object.values(USER_ROLES))
+      .withMessage(`available roles: ${Object.values(USER_ROLES)}`)
   ]
 }
 

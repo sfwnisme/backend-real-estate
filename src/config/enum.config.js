@@ -2,28 +2,19 @@
 // enum values for the entire application
 //----------------------------
 
-//deleteit
-module.exports = {
-  ticketStatus: {
-    OPEN: "open",
-    IN_PROGRESS: "in-progress",
-    RESOLVED: "resolved",
-    CLOSED: "closed",
-  },
-  ticketPriority: {
-    LOW: "low",
-    MEDIUM: "medium",
-    HIGH: "high",
-    CRITICAL: "critical",
-  },
-  userRoles: {
-    ADMIN: "admin",
-    AGENT: "agent",
-    VIEW_ONLY: "view-only",
-  },
-};
-//------
 const enums = module.exports;
+enums.STATUS_TEXT = {
+  SUCCESS: "success",
+  FAIL: "fail",
+  ERROR: "error",
+};
+enums.USER_ROLES = {
+  ADMIN: "admin",
+  MANAGER: "manager",
+  CSR: "csr",
+  VIEW_ONLY: "view_only",
+};
+
 enums.PROPERTY_TYPE = {
   HOUSE: "house",
   APPARTMENT: "appartment",
@@ -40,6 +31,7 @@ enums.BLOG_POST_STATUS = {
   DRAFT: "draft",
   PUBLISHED: "published",
 };
+
 enums.OG_TYPES = {
   // 1. General Website and Core Content
   WEBSITE: "website", // For Homepages, Search Results, About Us, etc.
@@ -57,8 +49,32 @@ enums.OG_TYPES = {
 };
 
 enums.TWITTER_CARD_TYPES = {
-  SUMMARY: 'summary',
-  SUMMARY_LARGE_IMAGE: 'summary_large_image',
-  PLAYER: 'player',
-  APP: 'app'
+  SUMMARY: "summary",
+  SUMMARY_LARGE_IMAGE: "summary_large_image",
+  PLAYER: "player",
+  APP: "app",
+};
+
+enums.FILES_CONFIGS = {
+  DIRS: {
+    DEFAULT: "default",
+    IMAGES: "images/",
+    PROPERTIES: "properties/",
+    SERVICES: "services/",
+    BLOG: "blog/",
+  },
+  IMAGE: {
+    MAX_SIZE: 3,
+    MAX_LENGTH: 2,
+  },
+  PDF: {
+    MAX_SIZE: 6,
+    MAX_LENGTH: 2,
+  },
+};
+
+enums.MODELS = {
+  PROPERTY: "Property",
+  BLOG: "Blog",
+  USER: "User",
 };

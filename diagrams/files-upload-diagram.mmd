@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Client as Frontend (Next.js)
+    participant API as Backend (Express.js)
+    participant DB as Database (MongoDB)
+    participant S3 as File Storage (AWS S3)
+
+    Client->>API: POST /properties + property data + file(s)
+    API->>S3: upload file1, file2, … → S3 returns URL1, URL2, …
+    S3-->>API: returns file URLs
+    API->>DB: create Files module documents for URLs → returns fileIds
+    DB-->>API: fileDocuments created (IDs)
+    API->>DB: create Property document using property data + fileIds array
+    DB-->>API: property created
+    API-->>Client: 201 Created + property data (including file URLs via file documents or populated)
+    
+    %% Now: fetching the property
+    Client->>API: GET /properties/{id}
+    API->>DB: fetch Property document (fileIds array)
+    DB-->>API: returns property data + fileIds
+    API->>DB: populate file URLs from Files module via fileIds
+    DB-->>API: returns file URLs
+    API-->>Client: 200 OK + property data (including file URLs array)

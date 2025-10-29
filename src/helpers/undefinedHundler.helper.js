@@ -1,4 +1,4 @@
-const statusText = require("../config/statusText.config");
+const { STATUS_TEXT } = require("../config/enum.config");
 const AppError = require("./appError");
 
 /**
@@ -10,7 +10,7 @@ const AppError = require("./appError");
 module.exports = (moduleResponse, next) => {
   if (!moduleResponse) {
     const appError = new AppError();
-    appError.create(400, statusText.FAIL, "not found");
+    appError.create(400, STATUS_TEXT.FAIL, "not found");
     return next(appError);
   }
 };

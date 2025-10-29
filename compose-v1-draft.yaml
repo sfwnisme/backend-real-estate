@@ -1,0 +1,32 @@
+services:
+  api:
+    depends_on:
+      - db
+    build: .
+    ports:
+      - 8000:8000
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - MONGO_URI=${MONGO_URI}
+      - PORT=${PORT}
+    develop:
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: ./package-lock.json
+          action: rebuild
+        - path: ./
+          target: /app
+          action: sync
+  db:
+    image: mongo:latest
+    ports: 
+      - 27017:27017
+    volumes: 
+      - mongo_data:/data/db
+  # You should also define the volume at the bottom of your compose.yaml:
+  # volumes:
+  #   mongo_data:
+volumes:
+  mongo_data:
+    

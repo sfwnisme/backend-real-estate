@@ -1,15 +1,15 @@
 const { formatApiResponse } = require("../utils/response.js");
-const statusText = require("../config/statusText.config.js");
 const AppError = require("../utils/appError.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const BlogPost = require("../models/blog-post.model.js");
+const Image = require("../models/image.model.js");
 const { default: slugify } = require("slugify");
 const {
   calculateReadingTime,
   setPublishedAt,
   setOgImage,
 } = require("../utils/utils.js");
-const { BLOG_POST_STATUS } = require("../config/enum.config.js");
+const { BLOG_POST_STATUS, STATUS_TEXT } = require("../config/enum.config.js");
 const appError = new AppError();
 
 const blogPostControllers = module.exports;
@@ -18,7 +18,7 @@ blogPostControllers.getBlogPosts = asyncWrapper(async (req, res) => {
   const blogPosts = await BlogPost.find({}, { __v: false }).lean();
   console.log("blogPost response", blogPosts);
   if (!blogPosts) {
-    appError(404, statusText.FAIL, "not found");
+    appError(404, STATUS_TEXT.FAIL, "not found");
   }
 
   res
@@ -26,18 +26,20 @@ blogPostControllers.getBlogPosts = asyncWrapper(async (req, res) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "data fetched successfully",
         blogPosts
       )
     );
 });
 blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
-  const queryPublishedOnly = {status: BLOG_POST_STATUS["PUBLISHED"]}
-  const blogPosts = await BlogPost.find(queryPublishedOnly, { __v: false }).lean();
+  const queryPublishedOnly = { status: BLOG_POST_STATUS["PUBLISHED"] };
+  const blogPosts = await BlogPost.find(queryPublishedOnly, {
+    __v: false,
+  }).lean();
   console.log("blogPost response", blogPosts);
   if (!blogPosts) {
-    appError(404, statusText.FAIL, "not found");
+    appError(404, STATUS_TEXT.FAIL, "not found");
   }
 
   res
@@ -45,18 +47,18 @@ blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "data fetched successfully",
         blogPosts
       )
     );
 });
 blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
-  const queryDraftOnly = {status: BLOG_POST_STATUS["DRAFT"]}
+  const queryDraftOnly = { status: BLOG_POST_STATUS["DRAFT"] };
   const blogPosts = await BlogPost.find(queryDraftOnly, { __v: false }).lean();
   console.log("blogPost response", blogPosts);
   if (!blogPosts) {
-    appError(404, statusText.FAIL, "not found");
+    appError(404, STATUS_TEXT.FAIL, "not found");
   }
 
   res
@@ -64,7 +66,7 @@ blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "data fetched successfully",
         blogPosts
       )
@@ -76,14 +78,14 @@ blogPostControllers.getBlogPost = asyncWrapper(async (req, res, next) => {
   const blog = await BlogPost.findOne({ slug: `${slug}` }, { __v: false });
 
   if (!blog) {
-    appError.create(404, statusText.FAIL, "not found");
+    appError.create(404, STATUS_TEXT.FAIL, "not found");
     return next(appError);
   }
 
   res
     .status(200)
     .json(
-      formatApiResponse(200, statusText.SUCCESS, "operation success", blog)
+      formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", blog)
     );
 });
 
@@ -104,17 +106,27 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
     readingTime,
     publishedAt: publishedAtDate,
   });
-  await createdBlogPost.save();
-  const populatedBlog = await BlogPost.findById(createdBlogPost._id).lean();
+  // try {
+
+  await createdBlogPost.save({}, { __v: false });
+
+  console.log("=========>", createdBlogPost);
+
+  // find the image and update its ownerId to this blog
+  console.log("coverImage =========>", createdBlogPost.coverImage);
+  const findImage = await Image.findByIdAndUpdate(createdBlogPost.coverImage, {
+    ownerId: createdBlogPost._id,
+  }, {new: true});
+  console.log(" the created image for this blog => ", findImage);
 
   res
     .status(201)
     .json(
       formatApiResponse(
         201,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "The blog created successfully",
-        populatedBlog
+        createdBlogPost
       )
     );
 });
@@ -137,7 +149,7 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "operation success",
         updateBlogPost
       )
@@ -153,9 +165,9 @@ blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
     .json(
       formatApiResponse(
         200,
-        statusText.SUCCESS,
+        STATUS_TEXT.SUCCESS,
         "blog deleted successfully",
         deletedBlogPost
       )
     );
-});
+}, "deleteBlogPost controller");

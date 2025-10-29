@@ -3,31 +3,31 @@ const router = express.Router();
 const controllers = require("../controllers/blog-post.controllers");
 const verifyToken = require("../middlewares/verifyToken");
 const authorizedRole = require("../middlewares/authorizedRole");
-const userRoles = require("../config/userRoles.config");
+const {USER_ROLES} = require("../config/enum.config");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 const {
   createBlogPostValidation,
   updateBlogPostValidation,
   singleBlogPostValidation,
   deleteBlogPostValidation,
-} = require("../../validations/blog-post.validation");
+} = require("../validations/blog-post.validation");
 
 router.use(verifyToken);
 
 router
   .route("/")
-  .get(authorizedRole(...Object.values(userRoles)), controllers.getBlogPosts);
+  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getBlogPosts);
   router
   .route("/published")
-  .get(authorizedRole(...Object.values(userRoles)), controllers.getPublishedBlogPosts);
+  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getPublishedBlogPosts);
   router
   .route("/draft")
-  .get(authorizedRole(...Object.values(userRoles)), controllers.getDraftBlogPosts);
+  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getDraftBlogPosts);
 
 router
   .route("/create")
   .post(
-    authorizedRole(userRoles.ADMIN, userRoles.MANAGER, userRoles.CSR),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
     createBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.createBlogPost
@@ -36,7 +36,7 @@ router
 router
   .route("/:slug")
   .get(
-    authorizedRole(...Object.values(userRoles)),
+    authorizedRole(...Object.values(USER_ROLES)),
     singleBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.getBlogPost
@@ -45,13 +45,13 @@ router
 router
   .route("/:blogPostId")
   .patch(
-    authorizedRole(userRoles.ADMIN, userRoles.MANAGER, userRoles.CSR),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
     updateBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.updateBlogPost
   )
   .delete(
-    authorizedRole(userRoles.ADMIN),
+    authorizedRole(USER_ROLES.ADMIN),
     deleteBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.deleteBlogPost
