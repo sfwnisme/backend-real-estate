@@ -15,7 +15,7 @@ router
     controllers.createImages
   );
 // change it to :id for the frontend
-router.route("/delete").delete(controllers.deleteImage);
+router.route("/delete/:imageId").delete(controllers.deleteImage);
 
 // other routes
 router.route("/property/:propertyId").get(controllers.getPropertyImages);

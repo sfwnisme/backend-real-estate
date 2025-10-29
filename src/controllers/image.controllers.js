@@ -7,15 +7,14 @@ const {
 const AppError = require("../utils/appError.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const { generateUUID, noFileNameSpaces } = require("../utils/utils.js");
-const {
-  putObject,
-  deleteObject,
-} = require("../integrations/aws-s3.service.js");
 const Image = require("../models/image.model.js");
 const { imageSize } = require("image-size");
-const { createImage } = require("../integrations/image.service.js");
-const { STATUS_CODES } = require("http");
+const { createImage, deleteImageFromDBAndBucket } = require("../integrations/image.service.js");
 const { default: mongoose } = require("mongoose");
+const {
+  deleteObject,
+  putObject,
+} = require("../integrations/aws-s3.service.js");
 
 const appError = new AppError();
 
@@ -23,6 +22,7 @@ const imageControllers = module.exports;
 
 imageControllers.getImages = asyncWrapper(async (req, res, next) => {
   const images = await Image.find({}, { __v: false });
+  // if(!images) 
   res
     .status(200)
     .json(
@@ -56,7 +56,20 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
 
 imageControllers.getImage = asyncWrapper(async (req, res, next) => {
   const { imageId } = req.params;
-  const images = await Image.findOne({ _id: imageId }, { __v: false });
+  const image = await Image.findOne({ _id: imageId }, { __v: false });
+  console.log("image not ound", image)
+  if(!image) {
+    return res
+    .status(404)
+    .json(
+      formatApiResponse(
+        404,
+        STATUS_TEXT.FAIL,
+        "image not found",
+        image
+      )
+    );
+  }
   res
     .status(200)
     .json(
@@ -64,7 +77,7 @@ imageControllers.getImage = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "images fetched successfully",
-        images
+        image
       )
     );
 });
@@ -247,175 +260,30 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
 });
 
 imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
-  const { key } = req.body;
+  const { imageId } = req.params;
 
-  if (!key) {
-    appError.create(400, STATUS_TEXT.FAIL, "key param is required");
+  if (!imageId) {
+    appError.create(400, STATUS_TEXT.FAIL, "imageId param is required");
     next(appError);
   }
 
-  const deleteImage = await deleteObject(key);
-  console.log("--------> delete image", deleteImage);
+  //delete from aws s3 bucket
+  const imageToDelete = await deleteImageFromDBAndBucket(imageId);
+  console.log("--------> delete image", imageToDelete);
 
-  if (deleteImage.statusText !== STATUS_TEXT.SUCCESS) {
-    return res.status(deleteImage.status).json(deleteImage);
+  if (imageToDelete.statusText !== STATUS_TEXT.SUCCESS) {
+    return res.status(imageToDelete.status).json(imageToDelete);
   }
+
+
   return res
-    .status(204)
+    .status(200)
     .json(
       formatApiResponse(
-        deleteImage.status,
+        imageToDelete.status,
         STATUS_TEXT.SUCCESS,
         `deleted successfully`,
-        deleteImage
+        imageToDelete
       )
     );
 });
-
-// blogPostControllers.getImages = asyncWrapper(async (req, res) => {
-//   // const utapi = new UTApi()
-
-//   // const blogPosts = await BlogPost.find({}, { __v: false }).lean();
-//   // console.log("blogPost response", blogPosts);
-//   // if (!blogPosts) {
-//   //   appError(404, STATUS_TEXT.FAIL, "not found");
-//   // }
-
-//   res
-//     .status(200)
-//     .json(
-//       formatApiResponse(
-//         200,
-//         STATUS_TEXT.SUCCESS,
-//         "data fetched successfully",
-//         blogPosts
-//       )
-//     );
-// });
-// blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
-//   const queryPublishedOnly = {status: BLOG_POST_STATUS["PUBLISHED"]}
-//   const blogPosts = await BlogPost.find(queryPublishedOnly, { __v: false }).lean();
-//   console.log("blogPost response", blogPosts);
-//   if (!blogPosts) {
-//     appError(404, STATUS_TEXT.FAIL, "not found");
-//   }
-
-//   res
-//     .status(200)
-//     .json(
-//       formatApiResponse(
-//         200,
-//         STATUS_TEXT.SUCCESS,
-//         "data fetched successfully",
-//         blogPosts
-//       )
-//     );
-// });
-// blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
-//   const queryDraftOnly = {status: BLOG_POST_STATUS["DRAFT"]}
-//   const blogPosts = await BlogPost.find(queryDraftOnly, { __v: false }).lean();
-//   console.log("blogPost response", blogPosts);
-//   if (!blogPosts) {
-//     appError(404, STATUS_TEXT.FAIL, "not found");
-//   }
-
-//   res
-//     .status(200)
-//     .json(
-//       formatApiResponse(
-//         200,
-//         STATUS_TEXT.SUCCESS,
-//         "data fetched successfully",
-//         blogPosts
-//       )
-//     );
-// });
-
-// blogPostControllers.getBlogPost = asyncWrapper(async (req, res, next) => {
-//   const { slug } = req.params;
-//   const blog = await BlogPost.findOne({ slug: `${slug}` }, { __v: false });
-
-//   if (!blog) {
-//     appError.create(404, STATUS_TEXT.FAIL, "not found");
-//     return next(appError);
-//   }
-
-//   res
-//     .status(200)
-//     .json(
-//       formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", blog)
-//     );
-// });
-
-// blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
-//   const { body } = req;
-//   const generateSlug = slugify(body.meta?.title ?? body.title);
-//   const readingTime = calculateReadingTime(body.content);
-//   const publishedAtDate = setPublishedAt(body);
-//   const ogImageSetUp = setOgImage(body);
-
-//   const createdBlogPost = new BlogPost({
-//     ...body,
-//     slug: generateSlug,
-//     meta: {
-//       ...body.meta,
-//       ogImage: ogImageSetUp,
-//     },
-//     readingTime,
-//     publishedAt: publishedAtDate,
-//   });
-//   await createdBlogPost.save();
-//   const populatedBlog = await BlogPost.findById(createdBlogPost._id).lean();
-
-//   res
-//     .status(201)
-//     .json(
-//       formatApiResponse(
-//         201,
-//         STATUS_TEXT.SUCCESS,
-//         "The blog created successfully",
-//         populatedBlog
-//       )
-//     );
-// });
-
-// blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
-//   const {
-//     body,
-//     params: { blogPostId },
-//   } = req;
-
-//   await BlogPost.updateOne(
-//     { _id: blogPostId },
-//     { ...body },
-//     { runValidators: true }
-//   );
-//   const updateBlogPost = await BlogPost.findById(blogPostId);
-
-//   res
-//     .status(200)
-//     .json(
-//       formatApiResponse(
-//         200,
-//         STATUS_TEXT.SUCCESS,
-//         "operation success",
-//         updateBlogPost
-//       )
-//     );
-// });
-
-// blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
-//   const { blogPostId } = req.params;
-
-//   const deletedBlogPost = await BlogPost.deleteOne({ _id: blogPostId });
-//   return res
-//     .status(200)
-//     .json(
-//       formatApiResponse(
-//         200,
-//         STATUS_TEXT.SUCCESS,
-//         "blog deleted successfully",
-//         deletedBlogPost
-//       )
-//     );
-// });
