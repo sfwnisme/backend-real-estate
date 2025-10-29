@@ -1,8 +1,12 @@
+//---------------------------------
+// initialize the reusable aws services
+// to avoid duplication. The shared services
+// found on /integrations/image.services.js
+//---------------------------------
+
 const {
   PutObjectCommand,
   DeleteObjectCommand,
-  DeleteObjectTaggingCommand,
-  GetObjectCommand,
   HeadObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { awsS3Client } = require("./aws-s3.config");
@@ -38,7 +42,7 @@ awsS3Services.putObject = async (file, fileName) => {
   }
 };
 
-awsS3Services.checkObjectExists = async (key) => {
+awsS3Services.checkAwsS3ObjectExists = async (key) => {
   const params = {
     Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: key,
@@ -91,7 +95,7 @@ awsS3Services.deleteObject = async (key) => {
      which mean we have to check if the object is exist by its Key
      checkObjectExist(key) function handle it before processing the deletion.
     */
-    const isObjectExist = await this.checkObjectExists(key);
+    const isObjectExist = await this.checkAwsS3ObjectExists(key);
     if (isObjectExist.statusText !== STATUS_TEXT.SUCCESS) {
       return formatApiResponse(
         isObjectExist.status,
