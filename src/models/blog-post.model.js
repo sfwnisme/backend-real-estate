@@ -56,7 +56,7 @@ const BlogPostSchema = new mongoose.Schema(
     coverImage: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Image",
-      default: "", // Allow empty if not strictly required
+      default: null, // Allow empty if not strictly required
     },
     status: {
       type: String,
