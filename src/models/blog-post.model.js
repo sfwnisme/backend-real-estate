@@ -8,7 +8,7 @@ const {
 // Define the Meta sub-schema (SEO fields)
 const MetaSchema = new mongoose.Schema(
   {
-    title: { type: String, trim: true, default: "" },
+    title: { type: String, unique: true, trim: true, default: "" },
     description: { type: String, trim: true, default: "" },
     keywords: [{ type: String, trim: true }],
     canonicalUrl: { type: String, trim: true, default: "" },
@@ -38,7 +38,7 @@ const BlogPostSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      required: [true, "Slug is required"],
+      required: true,
       unique: true, // Crucial for SEO URLs
       trim: true,
       lowercase: true,
@@ -67,7 +67,7 @@ const BlogPostSchema = new mongoose.Schema(
     },
 
     // --- NESTED DATA ---
-    
+
     meta: {
       type: MetaSchema,
       default: {},
@@ -93,7 +93,7 @@ const BlogPostSchema = new mongoose.Schema(
   {
     timestamps: true, // Automatically manages createdAt and updatedAt
     // collection: 'blog_post' // Optional: Define a custom collection name
-    versionKey: false
+    versionKey: false,
   }
 );
 
