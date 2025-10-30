@@ -1,8 +1,6 @@
 const { param, check, body } = require("express-validator");
 const Property = require("../models/property.model");
-const {
-  mustBeNumberMsg,
-} = require("../utils/validation.utils");
+const { mustBeNumberMsg } = require("../utils/validation.utils");
 const { PROPERTY_TYPE, PROPERTY_STATUS } = require("../config/enum.config");
 const {
   isValidateYearBuilt,
@@ -10,7 +8,10 @@ const {
   checkObjectId,
   checkDocumentTitleUniqueOnUpdate,
   checkSingleRequestByParam,
+  checkDocTitleUniqueOnCreate,
 } = require("./validatorHelpers");
+const { slugGenerator } = require("../utils/utils");
+const BlogPost = require("../models/blog-post.model");
 
 const propertyValidation = module.exports;
 
@@ -24,11 +25,8 @@ propertyValidation.createPropertyValidation = () => {
         (value) =>
           `"${value}" property name length should contain 15 to 120 charachters`
       )
-      .custom(async (value) => documentExists("title", value, Property, true))
-      .withMessage(
-        (value) =>
-          `"${value}" property name is already taken, choose another one`
-      ),
+      .custom(async (value) => checkDocTitleUniqueOnCreate(value, Property))
+      .withMessage("the title exist"),
     body("description")
       .notEmpty()
       .withMessage("description can not be empty")
