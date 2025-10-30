@@ -17,6 +17,10 @@ const propertyValidation = module.exports;
 
 propertyValidation.createPropertyValidation = () => {
   return [
+    body("tempId")
+    .optional()
+    .isMongoId()
+    .withMessage("tempId must be a valid mongoId"),
     body("title")
       .notEmpty()
       .withMessage("property cannot be empty")
