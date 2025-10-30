@@ -32,6 +32,7 @@ blogPostControllers.getBlogPosts = asyncWrapper(async (req, res) => {
       )
     );
 });
+
 blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
   const queryPublishedOnly = { status: BLOG_POST_STATUS["PUBLISHED"] };
   const blogPosts = await BlogPost.find(queryPublishedOnly, {
@@ -53,6 +54,7 @@ blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
       )
     );
 });
+
 blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
   const queryDraftOnly = { status: BLOG_POST_STATUS["DRAFT"] };
   const blogPosts = await BlogPost.find(queryDraftOnly, { __v: false }).lean();
@@ -91,33 +93,63 @@ blogPostControllers.getBlogPost = asyncWrapper(async (req, res, next) => {
 
 blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
   const { body } = req;
-  const generateSlug = slugify(body.meta?.title ?? body.title);
-  const readingTime = calculateReadingTime(body.content);
-  const publishedAtDate = setPublishedAt(body);
-  const ogImageSetUp = setOgImage(body);
+  const { tempId, ...rest } = body;
+  const tempOwnerId = tempId;
+  const isTemp = false;
+  const generateSlug = slugify(rest.meta?.title ?? rest.title);
+  const readingTime = calculateReadingTime(rest.content);
+  const publishedAtDate = setPublishedAt(rest);
+  // const ogImageSetUp = setOgImage(rest);
+  // const coverImage = rest.coverImage?rest.coverImage: null
+  const ogImage = rest.meta?.ogImage ? rest?.coverImage : null;
+
+  console.log("pass0");
 
   const createdBlogPost = new BlogPost({
-    ...body,
+    ...rest,
     slug: generateSlug,
     meta: {
-      ...body.meta,
-      ogImage: ogImageSetUp,
+      ...rest.meta,
+      ogImage: ogImage,
     },
     readingTime,
     publishedAt: publishedAtDate,
   });
-  // try {
 
-  await createdBlogPost.save({}, { __v: false });
+  const blogPostCreation = await createdBlogPost.save();
+  if (!blogPostCreation) {
+    appError.create(
+      400,
+      STATUS_TEXT.FAIL,
+      "blog post creation faild",
+      blogPostCreation
+    );
+    console.log("error 1");
+    return next(appError);
+  }
 
-  console.log("=========>", createdBlogPost);
+  const blogPostId = blogPostCreation._id;
 
-  // find the image and update its ownerId to this blog
-  console.log("coverImage =========>", createdBlogPost.coverImage);
-  const findImage = await Image.findByIdAndUpdate(createdBlogPost.coverImage, {
-    ownerId: createdBlogPost._id,
-  }, {new: true});
-  console.log(" the created image for this blog => ", findImage);
+  const findMany = await Image.find({ ownerId: tempOwnerId });
+
+  if (findMany.length === 0) {
+    console.log("pass3");
+    return res
+      .status(201)
+      .json(
+        formatApiResponse(
+          201,
+          STATUS_TEXT.SUCCESS,
+          "the blog post created successfully, but the images not found, you can add them by update the blog post",
+          blogPostCreation
+        )
+      );
+  }
+
+  await Image.updateMany(
+    { ownerId: tempOwnerId },
+    { $set: { ownerId: blogPostId, isTemp: isTemp } }
+  );
 
   res
     .status(201)
@@ -126,7 +158,7 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The blog created successfully",
-        createdBlogPost
+        blogPostCreation
       )
     );
 });

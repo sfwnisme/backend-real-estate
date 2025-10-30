@@ -9,12 +9,12 @@ const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const { generateUUID, noFileNameSpaces } = require("../utils/utils.js");
 const Image = require("../models/image.model.js");
 const { imageSize } = require("image-size");
-const { createImage, deleteImageFromDBAndBucket } = require("../integrations/image.service.js");
-const { default: mongoose } = require("mongoose");
 const {
-  deleteObject,
-  putObject,
-} = require("../integrations/aws-s3.service.js");
+  createImage,
+  deleteImageFromDBAndBucket,
+} = require("../integrations/image.service.js");
+const { default: mongoose } = require("mongoose");
+const { putObject } = require("../integrations/aws-s3.service.js");
 
 const appError = new AppError();
 
@@ -22,26 +22,7 @@ const imageControllers = module.exports;
 
 imageControllers.getImages = asyncWrapper(async (req, res, next) => {
   const images = await Image.find({}, { __v: false });
-  // if(!images) 
-  res
-    .status(200)
-    .json(
-      formatApiResponse(
-        200,
-        STATUS_TEXT.SUCCESS,
-        "images fetched successfully",
-        images
-      )
-    );
-});
-
-imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
-  const { propertyId } = req.params;
-
-  const images = await Image.find(
-    { ownerId: propertyId, ownerModel: MODELS.PROPERTY },
-    { __v: false }
-  );
+  // if(!images)
   res
     .status(200)
     .json(
@@ -57,18 +38,11 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
 imageControllers.getImage = asyncWrapper(async (req, res, next) => {
   const { imageId } = req.params;
   const image = await Image.findOne({ _id: imageId }, { __v: false });
-  console.log("image not ound", image)
-  if(!image) {
+  console.log("image not ound", image);
+  if (!image) {
     return res
-    .status(404)
-    .json(
-      formatApiResponse(
-        404,
-        STATUS_TEXT.FAIL,
-        "image not found",
-        image
-      )
-    );
+      .status(404)
+      .json(formatApiResponse(404, STATUS_TEXT.FAIL, "image not found", image));
   }
   res
     .status(200)
@@ -83,6 +57,7 @@ imageControllers.getImage = asyncWrapper(async (req, res, next) => {
 });
 
 // imageControllers.getImages = asyncWrapper(async (req, res) => {});
+// general images for random usages
 imageControllers.createImage = asyncWrapper(async (req, res, next) => {
   const {
     file,
@@ -186,78 +161,195 @@ imageControllers.createImages = asyncWrapper(async (req, res, next) => {
     );
 });
 
-// imageControllers.updateImage = asyncWrapper(async (req, res) => {});
+imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
+  const { propertyId } = req.params;
+  const model = MODELS.PROPERTY;
+
+  const images = await Image.find(
+    { ownerId: propertyId, ownerModel: model },
+    { __v: false }
+  );
+
+  if (images.length === 0) {
+    return res
+      .status(404)
+      .json(
+        formatApiResponse(
+          404,
+          STATUS_TEXT.FAIL,
+          "property images not found",
+          images
+        )
+      );
+  }
+
+  res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "property images fetched successfully",
+        images
+      )
+    );
+});
+
 imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
   const {
     file,
     body: { propertyId },
   } = req;
+
+  const imageFile = file;
+  const ownerId = propertyId;
   const ownerModel = MODELS.PROPERTY;
+  const bucketDir = FILES_CONFIGS.DIRS.PROPERTY;
+  const isTemp = false;
 
-  console.log("file", file);
-
-  if (!file) {
-    return res.status(400).json({ msg: "file not found" });
-  }
-  if (!propertyId) {
-    return res.status(400).json({ msg: "file not found" });
-  }
-
-  const createdImageRes = await createImage(
-    file,
-    propertyId,
+  const createImageRes = await createImage(
+    imageFile,
+    ownerId,
     ownerModel,
-    FILES_CONFIGS.DIRS.PROPERTIES
+    bucketDir,
+    isTemp
   );
+
   res
-    .status(createdImageRes.status)
+    .status(createImageRes.status)
     .json(
       formatApiResponse(
-        createdImageRes.status,
-        createdImageRes.statusText,
-        createdImageRes.msg,
-        createdImageRes.data || createdImageRes.error
+        createImageRes.status,
+        createImageRes.statusText,
+        createImageRes.msg,
+        createImageRes.data || createImageRes.error
+      )
+    );
+});
+imageControllers.createTempPropertyImage = asyncWrapper(
+  async (req, res, next) => {
+    const {
+      file,
+      body: { tempId },
+    } = req;
+    const tempOwnerId = tempId;
+    const ownerModel = MODELS.PROPERTY;
+    const bucketDir = FILES_CONFIGS.DIRS.PROPERTIES;
+    const isTemp = true;
+
+    const createImageRes = await createImage(
+      file,
+      tempOwnerId,
+      ownerModel,
+      bucketDir,
+      isTemp
+    );
+    res
+      .status(createImageRes.status)
+      .json(
+        formatApiResponse(
+          createImageRes.status,
+          createImageRes.statusText,
+          createImageRes.msg,
+          createImageRes.data || createImageRes.error
+        )
+      );
+  }
+);
+
+imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
+  const { blogPostId } = req.params;
+  const model = MODELS.BLOG;
+  console.log("pass", blogPostId);
+  const image = await Image.findOne(
+    { ownerId: blogPostId, ownerModel: model },
+    { __v: false }
+  );
+
+  console.log("------blog post image", image);
+  if (!image) {
+    return res
+      .status(404)
+      .json(
+        formatApiResponse(
+          404,
+          STATUS_TEXT.FAIL,
+          "blog post image not found",
+          image
+        )
+      );
+  }
+
+  res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "blog post image fetched successfully",
+        image
       )
     );
 });
 
 imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
-  const { file } = req;
-
-  if (!file) {
-    return res.status(400).json({ msg: "file not found" });
-  }
-
-  // identify the ownerModel
-  const ownerModel = MODELS.BLOG;
-  // generate termporary objectId to pass the mongoose validation
-  const temporaryOwnerId = new mongoose.Types.ObjectId();
-  console.log("temorary owner object id generated: ", temporaryOwnerId);
-
-  // generate the image
-  console.log("file", file);
-
-  if (!temporaryOwnerId) {
-    return res.status(400).json({ msg: "file not found" });
-  }
-
-  const createdImageRes = await createImage(
+  const {
     file,
-    temporaryOwnerId,
+    body: { blogPostId },
+  } = req;
+  const imageFile = file;
+  const ownerId = blogPostId;
+  const ownerModel = MODELS.BLOG;
+  const bucketDir = FILES_CONFIGS.DIRS.BLOG;
+
+  const createImageRes = await createImage(
+    imageFile,
+    ownerId,
     ownerModel,
-    FILES_CONFIGS.DIRS.PROPERTIES
+    bucketDir
   );
   res
-    .status(createdImageRes.status)
+    .status(createImageRes.status)
     .json(
       formatApiResponse(
-        createdImageRes.status,
-        createdImageRes.statusText,
-        createdImageRes.msg,
-        createdImageRes.data || createdImageRes.error
+        createImageRes.status,
+        createImageRes.statusText,
+        createImageRes.msg,
+        createImageRes.data || createImageRes.error
       )
     );
 });
+
+imageControllers.createTempBlogPostImage = asyncWrapper(
+  async (req, res, next) => {
+    const {
+      file,
+      body: { tempId },
+    } = req;
+    const tempOwnerId = tempId;
+    const ownerModel = MODELS.BLOG;
+    const bucketDir = FILES_CONFIGS.DIRS.BLOG;
+    const isTemp = true;
+
+    const createImageRes = await createImage(
+      file,
+      tempOwnerId,
+      ownerModel,
+      bucketDir,
+      isTemp
+    );
+    res
+      .status(createImageRes.status)
+      .json(
+        formatApiResponse(
+          createImageRes.status,
+          createImageRes.statusText,
+          createImageRes.msg,
+          createImageRes.data || createImageRes.error
+        )
+      );
+  }
+);
 
 imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
   const { imageId } = req.params;
@@ -274,7 +366,6 @@ imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
   if (imageToDelete.statusText !== STATUS_TEXT.SUCCESS) {
     return res.status(imageToDelete.status).json(imageToDelete);
   }
-
 
   return res
     .status(200)

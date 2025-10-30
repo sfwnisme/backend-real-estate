@@ -2,6 +2,7 @@ const { formatApiResponse } = require("../utils/response");
 const { STATUS_TEXT } = require("../config/enum.config.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const Property = require("../models/property.model.js");
+const Image = require("../models/image.model.js");
 const { slugGenerator } = require("../utils/utils.js");
 
 const propertyControllers = module.exports;
@@ -34,10 +35,40 @@ propertyControllers.getProperty = asyncWrapper(async (req, res, next) => {
 propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
   const { body } = req;
   const generateSlug = slugGenerator(body.title);
+  const { tempId, ...rest } = body;
+  const tempOwnerId = tempId;
+  const isTemp = false;
+  console.log("tempId", tempId);
+  console.log("rest", rest);
+  if (!tempOwnerId) {
+    console.log("tempOwnerId undefined, it must be added");
+  }
 
-  const createdProperty = new Property({ ...body, slug: generateSlug });
-  await createdProperty.save();
-  const propertyCreation = await Property.findById(createdProperty._id).lean();
+  const createdProperty = new Property({ ...rest, slug: generateSlug });
+  const propertyCreation = await createdProperty.save();
+  // const findProperty = await Property.findById(propertyCreation._id).lean();
+  const propertyId = propertyCreation._id;
+
+  // find image
+  const findMany = await Image.find({ ownerId: tempOwnerId });
+
+  if (findMany.length === 0) {
+    return res
+      .status(201)
+      .json(
+        formatApiResponse(
+          201,
+          STATUS_TEXT.SUCCESS,
+          "the property created successfully, but the images not found, you can add them by update the blog post",
+          propertyCreation
+        )
+      );
+  }
+
+  const asignImages = await Image.updateMany(
+    { ownerId: tempOwnerId },
+    { $set: { ownerId: propertyId, isTemp: isTemp } }
+  );
 
   res
     .status(201)

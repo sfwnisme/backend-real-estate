@@ -1,10 +1,7 @@
-const { STATUS_TEXT, FILES_CONFIGS } = require("../config/enum.config");
+const { STATUS_TEXT, FILES_CONFIGS, MODELS } = require("../config/enum.config");
 const { formatApiResponse } = require("../utils/response");
 const { noFileNameSpaces, generateUUID } = require("../utils/utils");
-const {
-  putObject,
-  deleteObject,
-} = require("./aws-s3.service");
+const { putObject, deleteObject } = require("./aws-s3.service");
 const AppError = require("../utils/appError");
 const { default: imageSize } = require("image-size");
 const Image = require("../models/image.model");
@@ -13,18 +10,21 @@ const appError = new AppError();
 const imageServices = module.exports;
 
 /**
- * 
- * @param {File} file 
- * @param {ObjectId} ownerId 
- * @param {Model} ownerModel 
- * @param {enum} bucketDir 
- * @returns 
+ *
+ * @param {File} file
+ * @param {ObjectId} ownerId
+ * @param {enum} ownerModel
+ * @param {enum} bucketDir
+ * @param {boolean} isTemp
+ * @returns
  */
+
 imageServices.createImage = async (
   file,
   ownerId,
   ownerModel,
-  bucketDir = FILES_CONFIGS.DIRS.DEFAULT
+  bucketDir = FILES_CONFIGS.DIRS.DEFAULT,
+  isTemp = true
 ) => {
   try {
     if (!file) {
@@ -34,6 +34,15 @@ imageServices.createImage = async (
         "file not found, object key must be 'file', or you have to add image"
       );
     }
+    if (!ownerId) {
+      return formatApiResponse(
+        400,
+        STATUS_TEXT.ERROR,
+        "ownerId is not defined"
+      );
+    }
+
+    // upload image to bucket
     console.log("multer file", file);
     const fileName = noFileNameSpaces(file.originalname);
     const awsS3Dir = bucketDir;
@@ -45,7 +54,7 @@ imageServices.createImage = async (
     const { url, key } = createImageResponse;
 
     if (!url || !key) {
-      appError.create(400, STATUS_TEXT.ERROR, "url or key is not found, ");
+      appError.create(400, STATUS_TEXT.ERROR, "url or key is not found");
       return formatApiResponse(
         400,
         STATUS_TEXT.ERROR,
@@ -53,6 +62,7 @@ imageServices.createImage = async (
       );
     }
 
+    // upload image to db
     const dimensions = imageSize(file?.buffer);
 
     const imageObject = {
@@ -67,46 +77,20 @@ imageServices.createImage = async (
         height: dimensions?.height,
       },
       isFeatured: false,
+      isTemp,
     };
 
     const addImagesToDB = new Image(imageObject);
-    await addImagesToDB.save();
-    const imageFromDB = await Image.findById(addImagesToDB._id).lean();
+    const imageCreation = await addImagesToDB.save();
 
     return formatApiResponse(
       201,
       STATUS_TEXT.SUCCESS,
       "The image created successfully",
-      imageFromDB
+      imageCreation
     );
   } catch (error) {
     console.error("imageServices.createImage: ", error);
-    return formatApiResponse(400, STATUS_TEXT.ERROR, error.message, error);
-  }
-};
-imageServices.updateImageOwner = async (imageId, ownerId, ownerModel) => {
-  try {
-    const updateImageObject = {
-      ownerModel,
-      ownerId,
-    };
-
-    console.log("update image owner imageId=", imageId);
-
-    await Image.updateOne({ _id: imageId }, updateImageObject, {
-      runValidators: true,
-    });
-
-    const imageFromDB = await Image.findById(imageId);
-
-    return formatApiResponse(
-      201,
-      STATUS_TEXT.SUCCESS,
-      "The image updated successfully",
-      imageFromDB
-    );
-  } catch (error) {
-    console.error("imageServices.updateImageOwner: ", error);
     return formatApiResponse(400, STATUS_TEXT.ERROR, error.message, error);
   }
 };
@@ -117,7 +101,6 @@ imageServices.deleteImageFromDBAndBucket = async (imageId) => {
   }
 
   try {
-
     // check image existance from db
     const getImageFromDB = await Image.findById(imageId);
     if (!getImageFromDB) {
