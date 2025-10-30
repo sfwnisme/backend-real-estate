@@ -1,4 +1,5 @@
 const { check } = require("express-validator");
+const { slugGenerator } = require("../utils/utils");
 
 const validatorHelpers = module.exports;
 
@@ -71,6 +72,17 @@ validatorHelpers.checkObjectId = (field, model) => {
       })
       .withMessage((value) => `"${value}" is not exist`),
   ];
+};
+
+validatorHelpers.checkDocTitleUniqueOnCreate = async (value, model) => {
+  const titleToSlug = slugGenerator(value);
+  const blogPostRes = await model.findOne({
+    $or: [{ title: value }, { slug: titleToSlug }],
+  });
+  if (blogPostRes) {
+    throw new Error("title is exist");
+  }
+  return true;
 };
 
 /**
