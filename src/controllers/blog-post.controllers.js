@@ -8,8 +8,13 @@ const {
   calculateReadingTime,
   setPublishedAt,
   setOgImage,
+  slugGenerator,
 } = require("../utils/utils.js");
-const { BLOG_POST_STATUS, STATUS_TEXT } = require("../config/enum.config.js");
+const {
+  BLOG_POST_STATUS,
+  STATUS_TEXT,
+  MODELS,
+} = require("../config/enum.config.js");
 const appError = new AppError();
 
 const blogPostControllers = module.exports;
@@ -96,14 +101,15 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
   const { tempId, ...rest } = body;
   const tempOwnerId = tempId;
   const isTemp = false;
-  const generateSlug = slugify(rest.meta?.title ?? rest.title);
+  const generateSlug = slugGenerator(rest.title);
+  console.log("generate slug: ", generateSlug);
+  console.log("title: ", rest.title);
+  console.log("title:? ", rest?.title);
+  console.log("meta.title: ", rest.meta.title);
+  console.log("meta.title:? ", rest.meta?.title);
   const readingTime = calculateReadingTime(rest.content);
   const publishedAtDate = setPublishedAt(rest);
-  // const ogImageSetUp = setOgImage(rest);
-  // const coverImage = rest.coverImage?rest.coverImage: null
   const ogImage = rest.meta?.ogImage ? rest?.coverImage : null;
-
-  console.log("pass0");
 
   const createdBlogPost = new BlogPost({
     ...rest,
@@ -124,7 +130,6 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
       "blog post creation faild",
       blogPostCreation
     );
-    console.log("error 1");
     return next(appError);
   }
 
@@ -133,7 +138,7 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
   const findMany = await Image.find({ ownerId: tempOwnerId });
 
   if (findMany.length === 0) {
-    console.log("pass3");
+    console.log("pass4");
     return res
       .status(201)
       .json(
@@ -191,15 +196,77 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
 blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
   const { blogPostId } = req.params;
 
-  const deletedBlogPost = await BlogPost.deleteOne({ _id: blogPostId });
+  // find blog-post image
+  const findBlogPostImage = await Image.findOne({
+    ownerId: blogPostId,
+    ownerModel: MODELS.BLOG,
+  });
+  console.log("findBlogPostImage: ", findBlogPostImage);
+  // delete blog-post
+  const blogPostDeletion = await BlogPost.deleteOne({ _id: blogPostId });
+
+  // blog-post not founc
+  if (blogPostDeletion.deletedCount === 0) {
+    return res
+      .status(404)
+      .json(
+        formatApiResponse(
+          404,
+          STATUS_TEXT.SUCCESS,
+          "blog deleted successfully",
+          blogPostDeletion
+        )
+      );
+  }
+
+  // blog post found but no images
+  if (!findBlogPostImage) {
+    return res
+      .status(204)
+      .json(
+        formatApiResponse(
+          200,
+          STATUS_TEXT.SUCCESS,
+          "blog post deleted successfully, but no images found to be deleted",
+          blogPostDeletion
+        )
+      );
+  }
+  const blogPostImageDeletion = await Image.deleteOne({
+    _id: findBlogPostImage._id,
+  });
+  console.log("image deleted");
   return res
     .status(200)
     .json(
       formatApiResponse(
         200,
         STATUS_TEXT.SUCCESS,
-        "blog deleted successfully",
-        deletedBlogPost
+        "blog post delete completely",
+        blogPostDeletion
       )
     );
-}, "deleteBlogPost controller");
+});
+
+// delete this controller, it's only for testing
+blogPostControllers.deleteManyBlogPosts = asyncWrapper(
+  async (req, res, next) => {
+    const { slug } = req.body;
+
+    try {
+      const deleteAll = await BlogPost.deleteMany({ slug: slug });
+      return res
+        .status(200)
+        .json(
+          formatApiResponse(
+            200,
+            STATUS_TEXT.SUCCESS,
+            "blog posts deleted successfully",
+            deleteAll
+          )
+        );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);

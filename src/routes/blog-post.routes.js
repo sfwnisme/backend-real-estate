@@ -3,7 +3,7 @@ const router = express.Router();
 const controllers = require("../controllers/blog-post.controllers");
 const verifyToken = require("../middlewares/verifyToken");
 const authorizedRole = require("../middlewares/authorizedRole");
-const {USER_ROLES} = require("../config/enum.config");
+const { USER_ROLES } = require("../config/enum.config");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 const {
   createBlogPostValidation,
@@ -17,12 +17,18 @@ router.use(verifyToken);
 router
   .route("/")
   .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getBlogPosts);
-  router
+router
   .route("/published")
-  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getPublishedBlogPosts);
-  router
+  .get(
+    authorizedRole(...Object.values(USER_ROLES)),
+    controllers.getPublishedBlogPosts
+  );
+router
   .route("/draft")
-  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getDraftBlogPosts);
+  .get(
+    authorizedRole(...Object.values(USER_ROLES)),
+    controllers.getDraftBlogPosts
+  );
 
 router
   .route("/create")
@@ -41,6 +47,9 @@ router
     validationErrorHandlerMiddleware,
     controllers.getBlogPost
   );
+
+// delet this route, it's only for testing
+router.route("/delete-many").delete(controllers.deleteManyBlogPosts);
 
 router
   .route("/:blogPostId")
