@@ -42,7 +42,7 @@ const imageSchema = new mongoose.Schema(
     },
     isTemp: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   { timestamps: true }
