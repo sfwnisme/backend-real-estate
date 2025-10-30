@@ -52,9 +52,9 @@ blogValidation.createBlogPostValidation = () => {
           `"${value}" ${path} length should be between 500 and 10000 characters`
       ),
     body("coverImage")
-      .optional({ nullable: true, checkFalsy: true }) // Matches your schema's default: ''
+      .optional({ nullable: true }) // Matches your schema's default: null
       .isMongoId()
-      .withMessage("cover image must be a mongoId"),
+      .withMessage("cover image must be a mongoId or null"),
 
     body("status")
       .notEmpty()
@@ -153,9 +153,9 @@ blogValidation.updateBlogPostValidation = () => {
           `"${value}" ${path} length should be between 500 and 10000 characters`
       ),
     body("coverImage")
-      .optional({ nullable: true, checkFalsy: true }) // Matches your schema's default: ''
+      .optional({ nullable: true }) // Matches your schema's default: null
       .isMongoId()
-      .withMessage("cover image must be a mongoId"),
+      .withMessage("cover image must be a mongoId or null"),
 
     body("status")
       .optional()
