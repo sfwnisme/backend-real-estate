@@ -53,11 +53,6 @@ const BlogPostSchema = new mongoose.Schema(
       type: String,
       required: [true, "Content is required"],
     },
-    coverImage: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Image",
-      default: null, // Allow empty if not strictly required
-    },
     status: {
       type: String,
       enum: Object.values(BLOG_POST_STATUS),

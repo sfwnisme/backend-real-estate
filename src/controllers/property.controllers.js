@@ -87,6 +87,7 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
     );
 });
 
+
 propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
   const {
     body,
@@ -110,6 +111,31 @@ propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
       )
     );
 });
+
+propertyControllers.updatePropertySlug = asyncWrapper(
+  async (req, res, next) => {
+    const { slug, propertyId } = req.body;
+    const generateSlug = slugGenerator(slug);
+    const propertySlugUpdate = await Property.findByIdAndUpdate(
+      propertyId,
+      {
+        slug: generateSlug,
+      },
+      { new: true, runValidators: true, select: "slug -_id" }
+    );
+
+    res
+      .status(200)
+      .json(
+        formatApiResponse(
+          200,
+          STATUS_TEXT.SUCCESS,
+          "slug updated successfully",
+          propertySlugUpdate
+        )
+      );
+  }
+);
 
 propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
   const ownerId = req.params.propertyId;

@@ -51,10 +51,6 @@ blogValidation.createBlogPostValidation = () => {
         (value, { path }) =>
           `"${value}" ${path} length should be between 500 and 10000 characters`
       ),
-    body("coverImage")
-      .optional({ nullable: true }) // Matches your schema's default: null
-      .isMongoId()
-      .withMessage("cover image must be a mongoId or null"),
 
     body("status")
       .notEmpty()
@@ -117,7 +113,10 @@ blogValidation.createBlogPostValidation = () => {
 
 blogValidation.updateBlogPostValidation = () => {
   return [
-    ...checkSingleRequestByParam("blogPostId", BlogPost),
+    // ...checkSingleRequestByParam("blogPostId", BlogPost),
+    param("blogPostId")
+      .custom(async (value) => documentExists("_id", value, BlogPost, false))
+      .withMessage((value) => `${value} is not exist`),
     body("title")
       .optional()
       .notEmpty()
@@ -159,10 +158,6 @@ blogValidation.updateBlogPostValidation = () => {
         (value, { path }) =>
           `"${value}" ${path} length should be between 500 and 10000 characters`
       ),
-    body("coverImage")
-      .optional({ nullable: true }) // Matches your schema's default: null
-      .isMongoId()
-      .withMessage("cover image must be a mongoId or null"),
 
     body("status")
       .optional()
@@ -226,6 +221,28 @@ blogValidation.updateBlogPostValidation = () => {
 
 blogValidation.singleBlogPostValidation = () =>
   checkSingleRequestByParam("slug", BlogPost);
+
+blogValidation.updateBlogPostSlugValidation = () => {
+  return [
+    body("blogPostId")
+      .notEmpty()
+      .withMessage("blogPostId can not be emptsy")
+      .isMongoId()
+      .withMessage("blogPostId is not a valid mongoId")
+      .bail()
+      .custom((value) => documentExists("_id", value, BlogPost, false))
+      .withMessage("blogPostId is exist"),
+    body("slug")
+      .notEmpty()
+      .withMessage("slug can not be emptsy")
+      .bail()
+      .custom(async (value) => {
+        const generateSlug = slugGenerator(value);
+        return documentExists("slug", generateSlug, BlogPost, true);
+      })
+      .withMessage("slug is exist, create another one"),
+  ];
+};
 
 blogValidation.deleteBlogPostValidation = () =>
   checkObjectId("blogPostId", BlogPost);
