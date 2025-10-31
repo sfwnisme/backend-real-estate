@@ -196,6 +196,31 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
     );
 });
 
+blogPostControllers.updateBlogPostSlug = asyncWrapper(
+  async (req, res, next) => {
+    const { slug, blogPostId } = req.body;
+    const generateSlug = slugGenerator(slug);
+    const blogPostSlugUpdate = await BlogPost.findByIdAndUpdate(
+      blogPostId,
+      {
+        slug: generateSlug,
+      },
+      { new: true, runValidators: true, select: "slug -_id" }
+    );
+
+    res
+      .status(200)
+      .json(
+        formatApiResponse(
+          200,
+          STATUS_TEXT.SUCCESS,
+          "slug updated successfully",
+          blogPostSlugUpdate
+        )
+      );
+  }
+);
+
 blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
   const { blogPostId } = req.params;
   const ownerId = blogPostId;

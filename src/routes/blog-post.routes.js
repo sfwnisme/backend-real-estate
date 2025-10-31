@@ -10,6 +10,7 @@ const {
   updateBlogPostValidation,
   singleBlogPostValidation,
   deleteBlogPostValidation,
+  updateBlogPostSlugValidation,
 } = require("../validations/blog-post.validation");
 
 router.use(verifyToken);
@@ -46,6 +47,15 @@ router
     singleBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.getBlogPost
+  );
+
+router
+  .route("/update-slug")
+  .patch(
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    updateBlogPostSlugValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.updateBlogPostSlug
   );
 
 // delet this route, it's only for testing
