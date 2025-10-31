@@ -198,34 +198,21 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
 
 blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
   const { blogPostId } = req.params;
+  const ownerId = blogPostId;
+  const ownerModel = MODELS.BLOG;
 
-  // find blog-post image
-  const findBlogPostImage = await Image.findOne({
-    ownerId: blogPostId,
-    ownerModel: MODELS.BLOG,
-  });
-  console.log("findBlogPostImage: ", findBlogPostImage);
-  // delete blog-post
+  const findBlogPostImage = await Image.findOne({ ownerId, ownerModel });
+
   const blogPostDeletion = await BlogPost.deleteOne({ _id: blogPostId });
 
-  // blog-post not founc
   if (blogPostDeletion.deletedCount === 0) {
-    return res
-      .status(404)
-      .json(
-        formatApiResponse(
-          404,
-          STATUS_TEXT.SUCCESS,
-          "blog deleted successfully",
-          blogPostDeletion
-        )
-      );
+    appError.create(400, STATUS_TEXT.FAIL, "blog post could not be deleted");
+    return next(appError);
   }
 
-  // blog post found but no images
   if (!findBlogPostImage) {
     return res
-      .status(204)
+      .status(200)
       .json(
         formatApiResponse(
           200,
