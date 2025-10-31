@@ -9,7 +9,9 @@ const {
   checkSingleRequestByParam,
   checkDocumentTitleUniqueOnUpdate,
   checkObjectId,
+  checkDocTitleUniqueOnCreate,
 } = require("./validatorHelpers");
+const { slugGenerator } = require("../utils/utils");
 
 // Reusable message helper
 const mustBeStringMsg = (field) => `${field} must be a string.`;
@@ -17,6 +19,10 @@ const blogValidation = module.exports;
 
 blogValidation.createBlogPostValidation = () => {
   return [
+    body("tempId")
+      .optional()
+      .isMongoId()
+      .withMessage("tempId must be a valid mongoId"),
     body("title")
       .notEmpty()
       .withMessage("Blog title cannot be empty")
@@ -25,15 +31,9 @@ blogValidation.createBlogPostValidation = () => {
         (value, { req, path }) =>
           `"${value}" ${path} length must contain 10 to 120 characters`
       )
-      // Check if the title already exists (for generating a unique slug)
-      .custom(async (value, { req, path }) =>
-        documentExists(path, value, BlogPost, true)
-      )
-      .withMessage(
-        (value, { req, path }) =>
-          `"${value}" ${path} is already taken, choose another one`
-      ),
-
+      .custom(async (value) => checkDocTitleUniqueOnCreate(value, BlogPost))
+      .withMessage("title exists"),
+      
     body("excerpt")
       .notEmpty()
       .withMessage("Excerpt/summary is required")
@@ -82,7 +82,14 @@ blogValidation.createBlogPostValidation = () => {
       .isString()
       .trim()
       .isLength({ max: 120 })
-      .withMessage("Meta title must be a string under 120 characters."),
+      .withMessage("Meta title must be a string under 120 characters.")
+      .custom(async (value, { req, path }) =>
+        documentExists(path, value, BlogPost, true)
+      )
+      .withMessage(
+        (value, { req, path }) =>
+          `"${value}" ${path} is already taken, choose another one`
+      ),
 
     body("meta.description")
       .optional({ nullable: true, checkFalsy: true })
@@ -184,7 +191,14 @@ blogValidation.updateBlogPostValidation = () => {
       .isString()
       .trim()
       .isLength({ max: 120 })
-      .withMessage("Meta title must be a string under 120 characters."),
+      .withMessage("Meta title must be a string under 120 characters.")
+      .custom(async (value, { req, path }) =>
+        documentExists(path, value, BlogPost, true)
+      )
+      .withMessage(
+        (value, { req, path }) =>
+          `"${value}" ${path} is already taken, choose another one`
+      ),
 
     body("meta.description")
       .optional({ nullable: true, checkFalsy: true })

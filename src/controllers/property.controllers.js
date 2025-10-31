@@ -1,9 +1,14 @@
 const { formatApiResponse } = require("../utils/response");
-const { STATUS_TEXT } = require("../config/enum.config.js");
+const { STATUS_TEXT, MODELS } = require("../config/enum.config.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const Property = require("../models/property.model.js");
 const Image = require("../models/image.model.js");
 const { slugGenerator } = require("../utils/utils.js");
+const AppError = require("../utils/appError.js");
+const {
+  deleteImageFromDBAndBucket,
+} = require("../integrations/image.service.js");
+const appError = new AppError();
 
 const propertyControllers = module.exports;
 
@@ -107,17 +112,45 @@ propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
 });
 
 propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
-  const { propertyId } = req.params;
+  const ownerId = req.params.propertyId;
+  const ownerModel = MODELS.PROPERTY;
 
-  const deletedProperty = await Property.deleteOne({ _id: propertyId });
+  const findPropertyImages = await Image.find({ ownerId, ownerModel });
+
+  const propertyDeletion = await Property.deleteOne({ _id: ownerId });
+
+  if (propertyDeletion.deletedCount === 0) {
+    appError.create(400, STATUS_TEXT.FAIL, "property could not be deleted");
+    return next(appError);
+  }
+
+  if (findPropertyImages.length === 0) {
+    return res
+      .status(200)
+      .json(
+        formatApiResponse(
+          204,
+          STATUS_TEXT.SUCCESS,
+          "property deleted, but there is no related images to be deleted",
+          propertyDeletion
+        )
+      );
+  }
+
+  const propertyImagesArray = findPropertyImages.map((img) => {
+    return deleteImageFromDBAndBucket(img._id);
+  });
+
+  const propertyImagesDeletion = await Promise.all(propertyImagesArray);
+
   return res
     .status(200)
     .json(
       formatApiResponse(
         200,
         STATUS_TEXT.SUCCESS,
-        "property deleted successfully",
-        deletedProperty
+        "property deleted completely",
+        { property: propertyDeletion, images: propertyImagesDeletion }
       )
     );
 });
