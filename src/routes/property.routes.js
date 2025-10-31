@@ -9,6 +9,7 @@ const {
   createPropertyValidation,
   updatePropertyValidation,
   deletePropertyValidation,
+  updatePropertySlugValidation,
 } = require("../validations/property.validation");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 
@@ -35,6 +36,16 @@ router
     validationErrorHandlerMiddleware,
     controllers.getProperty
   );
+
+router
+  .route("/update-slug")
+  .patch(
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    updatePropertySlugValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.updatePropertySlug
+  );
+
 router
   .route("/:propertyId")
   .patch(

@@ -11,16 +11,15 @@ const {
   checkDocTitleUniqueOnCreate,
 } = require("./validatorHelpers");
 const { slugGenerator } = require("../utils/utils");
-const BlogPost = require("../models/blog-post.model");
 
 const propertyValidation = module.exports;
 
 propertyValidation.createPropertyValidation = () => {
   return [
     body("tempId")
-    .optional()
-    .isMongoId()
-    .withMessage("tempId must be a valid mongoId"),
+      .optional()
+      .isMongoId()
+      .withMessage("tempId must be a valid mongoId"),
     body("title")
       .notEmpty()
       .withMessage("property cannot be empty")
@@ -259,6 +258,28 @@ propertyValidation.updatePropertyValidation = () => {
 
 propertyValidation.singlePropertyValidation = () =>
   checkSingleRequestByParam("slug", Property);
+
+propertyValidation.updatePropertySlugValidation = () => {
+  return [
+    body("propertyId")
+      .notEmpty()
+      .withMessage("propertyId can not be emptsy")
+      .isMongoId()
+      .withMessage("propertyId is not a valid mongoId")
+      .bail()
+      .custom((value) => documentExists("_id", value, Property, false))
+      .withMessage("propertyId is exist"),
+    body("slug")
+      .notEmpty()
+      .withMessage("slug can not be emptsy")
+      .bail()
+      .custom(async (value) => {
+        const generateSlug = slugGenerator(value);
+        return documentExists("slug", generateSlug, Property, true);
+      })
+      .withMessage("slug is exist, create another one"),
+  ];
+};
 
 propertyValidation.deletePropertyValidation = () =>
   checkObjectId("propertyId", Property);
