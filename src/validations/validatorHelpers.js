@@ -29,7 +29,7 @@ validatorHelpers.isValidateYearBuilt = (value) => {
  * * @param {string} key - document's field name (e.g., 'userId')
  * @param {*} value - document field's value (e.g., the ID being checked)
  * @param {*} model - mongoose model (e.g., User)
- * @param {boolean} exists - false: return valid / true: return error
+ * @param {boolean} exists - false: error on not exist / true: error on exist
  * @returns { boolean }
  */
 validatorHelpers.documentExists = async (key, value, model, exist = true) => {
