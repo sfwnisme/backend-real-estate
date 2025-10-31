@@ -15,6 +15,9 @@ const {
   STATUS_TEXT,
   MODELS,
 } = require("../config/enum.config.js");
+const {
+  deleteImageFromDBAndBucket,
+} = require("../integrations/image.service.js");
 const appError = new AppError();
 
 const blogPostControllers = module.exports;
@@ -232,10 +235,11 @@ blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
         )
       );
   }
-  const blogPostImageDeletion = await Image.deleteOne({
-    _id: findBlogPostImage._id,
-  });
-  console.log("image deleted");
+
+  const blogPostImageDeletion = await deleteImageFromDBAndBucket(
+    findBlogPostImage._id
+  );
+
   return res
     .status(200)
     .json(
@@ -243,7 +247,7 @@ blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "blog post delete completely",
-        blogPostDeletion
+        { blog: blogPostDeletion, image: blogPostImageDeletion }
       )
     );
 });
