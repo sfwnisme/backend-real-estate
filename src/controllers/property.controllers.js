@@ -121,7 +121,7 @@ propertyControllers.updatePropertySlug = asyncWrapper(
       {
         slug: generateSlug,
       },
-      { select: "slug -_id" }
+      { new: true, runValidators: true, select: "slug -_id" }
     );
 
     res
