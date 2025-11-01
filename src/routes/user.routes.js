@@ -2,43 +2,71 @@ const express = require("express");
 const router = express.Router();
 const controllers = require("../controllers/user.controllers");
 const {
-  registerValidation,
-  loginValidation,
-  updateUserValidation,
-} = require("../middlewares/validationSchema");
+  // loginValidation,
+  // updateUserValidation,
+  userRegisterValidation,
+  userLoginValidation,
+  userUpdateValidation,
+  singleUserValidation,
+  deleteUserValidation,
+} = require("../validations/user.validation");
 const verifyToken = require("../middlewares/verifyToken");
 const authorizedRole = require("../middlewares/authorizedRole");
 const { USER_ROLES } = require("../config/enum.config");
-
-router.use(verifyToken);
+const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 
 router
   .route("/")
   .get(
+    verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     controllers.getAllUsers,
   );
 
-router.route("/me").get(controllers.getCurrentUser);
+router.route("/me").get(verifyToken, controllers.getCurrentUser);
 
 router
   .route("/register")
   .post(
+    verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-    registerValidation(),
+    userRegisterValidation(),
+    validationErrorHandlerMiddleware,
     controllers.register,
   );
 
-router.route("/login").post(loginValidation(), controllers.login);
+router
+  .route("/login")
+  .post(
+    userLoginValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.login,
+  );
 
 router
   .route("/:userId")
-  .get(controllers.getSingleUser)
-  .patch(
+  .get(
+    verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-    updateUserValidation(),
-    controllers.updateUser,
+    singleUserValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.getSingleUser,
   )
-  .delete(authorizedRole(USER_ROLES.ADMIN), controllers.deleteUser);
+  .patch(
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+    userUpdateValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.updateUser,
+  );
+router
+  .route("/delete/:userId")
+  .delete(
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN),
+    deleteUserValidation(),
+    validationErrorHandlerMiddleware,
+    controllers.deleteUser,
+  );
 
 module.exports = router;
