@@ -1,55 +1,44 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controllers = require('../controllers/user.controllers');
-const { registerValidation, loginValidation, updateUserValidation } = require('../middlewares/validationSchema');
-const verifyToken = require('../middlewares/verifyToken');
-const authorizedRole = require('../middlewares/authorizedRole');
-const {USER_ROLES} = require('../config/enum.config')
+const controllers = require("../controllers/user.controllers");
+const {
+  registerValidation,
+  loginValidation,
+  updateUserValidation,
+} = require("../middlewares/validationSchema");
+const verifyToken = require("../middlewares/verifyToken");
+const authorizedRole = require("../middlewares/authorizedRole");
+const { USER_ROLES } = require("../config/enum.config");
 
-// router.use(verifyToken)
+router.use(verifyToken);
 
-router.route('/')
+router
+  .route("/")
   .get(
-    verifyToken,
-    authorizedRole(...Object.values(USER_ROLES)),
-    controllers.getAllUsers
-  )
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+    controllers.getAllUsers,
+  );
 
-router.route('/me')
-  .get(
-    verifyToken,
-    controllers.getCurrentUser
-  )
+router.route("/me").get(controllers.getCurrentUser);
 
-router.route('/register')
+router
+  .route("/register")
   .post(
-    verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     registerValidation(),
-    controllers.register
-  )
+    controllers.register,
+  );
 
-router.route('/login')
-  .post(
-    loginValidation(),
-    controllers.login
-  )
+router.route("/login").post(loginValidation(), controllers.login);
 
-router.route('/:userId')
-  .get(
-    verifyToken,
-    controllers.getSingleUser
-  )
+router
+  .route("/:userId")
+  .get(controllers.getSingleUser)
   .patch(
-    verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     updateUserValidation(),
-    controllers.updateUser
+    controllers.updateUser,
   )
-  .delete(
-    verifyToken,
-    authorizedRole(USER_ROLES.ADMIN),
-    controllers.deleteUser
-  )
+  .delete(authorizedRole(USER_ROLES.ADMIN), controllers.deleteUser);
 
-module.exports = router
+module.exports = router;

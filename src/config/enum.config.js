@@ -11,7 +11,7 @@ enums.STATUS_TEXT = {
 enums.USER_ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
-  CSR: "csr",
+  CONTENT: "content",
   VIEW_ONLY: "view_only",
 };
 
