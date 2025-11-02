@@ -1,14 +1,20 @@
 const { STATUS_TEXT } = require("../config/enum.config");
 const { formatApiResponse } = require("../utils/response");
 
-module.exports.paginationService = async (page, pageSize, model) => {
+module.exports.paginationService = async (
+  page,
+  pageSize,
+  model,
+  filter = {},
+) => {
   try {
     const pageToNum = parseInt(page, 10) || 1;
     const pageSizeToNum = parseInt(pageSize, 10) || 10;
     const skip = (pageToNum - 1) * pageSizeToNum;
 
-    const totalDocs = await model.countDocuments({});
+    const totalDocs = await model.countDocuments(filter);
     const docs = await model.aggregate([
+      { $match: filter },
       { $skip: skip },
       { $limit: pageSizeToNum },
     ]);
