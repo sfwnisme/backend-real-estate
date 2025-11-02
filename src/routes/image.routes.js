@@ -2,9 +2,16 @@ const express = require("express");
 const router = express.Router();
 const controllers = require("../controllers/image.controllers");
 const upload = require("../middlewares/multer.middleware");
-const { FILES_CONFIGS, USER_ROLES } = require("../config/enum.config");
+const Property = require("../models/property.model.js");
+const BlogPost = require("../models/blog-post.model.js");
+const { FILES_CONFIGS, USER_ROLES, MODELS } = require("../config/enum.config");
 const verifyToken = require("../middlewares/verifyToken");
 const authorizedRole = require("../middlewares/authorizedRole");
+const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
+const {
+  imageTempIdValidation,
+  imageOwnerIdImageValidation,
+} = require("../validations/image.validation");
 
 router.route("/").get(controllers.getImages);
 router.route("/:imageId").get(controllers.getImage);
@@ -42,6 +49,8 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.single("file"),
+    imageTempIdValidation(),
+    validationErrorHandlerMiddleware,
     controllers.createTempPropertyImage,
   );
 router
@@ -50,6 +59,8 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.single("file"),
+    imageOwnerIdImageValidation("propertyId", Property),
+    validationErrorHandlerMiddleware,
     controllers.createPropertyImage,
   );
 
@@ -61,6 +72,8 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
+    imageTempIdValidation(),
+    validationErrorHandlerMiddleware,
     controllers.createTempBlogPostImage,
   );
 router
@@ -69,6 +82,8 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
+    imageOwnerIdImageValidation("blogPostId", BlogPost),
+    validationErrorHandlerMiddleware,
     controllers.createBlogPostImage,
   );
 
