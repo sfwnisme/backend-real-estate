@@ -80,7 +80,7 @@ userControllers.register = asyncWrapper(async (req, res, next) => {
 userControllers.login = asyncWrapper(async (req, res, next) => {
   const { email, password } = req.body;
 
-  let user = await User.findOne({ email }, { __v: false });
+  const user = await User.findOne({ email }, { __v: false });
   const passwordIsMatch = await bcrypt.compare(password, user.password);
 
   if (user && !passwordIsMatch) {
@@ -107,9 +107,9 @@ userControllers.updateUser = asyncWrapper(async (req, res, next) => {
     params: { userId },
   } = req;
 
-  let updatedFields = { ...body };
+  const updatedFields = { ...body };
   if (body.password) {
-    let updatedPassword = await hashPassword(body.password);
+    const updatedPassword = await hashPassword(body.password);
     updatedFields.password = updatedPassword;
   }
 
