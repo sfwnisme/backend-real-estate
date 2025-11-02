@@ -1,13 +1,14 @@
 const { default: slugify } = require("slugify");
 const { STATUS_TEXT } = require("../config/enum.config");
 const AppError = require("./appError");
-const utils = module.exports;
 const crypto = require("crypto");
 const path = require("path");
 
+const utils = module.exports;
+
 utils.removeObjectKeys = (keys, obj) => {
   // const { [key]: omitted, ...rest } = obj
-  let newObj = { ...obj };
+  const newObj = { ...obj };
   if (!Array.isArray(keys)) {
     delete newObj[keys];
   }
