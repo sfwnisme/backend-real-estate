@@ -3,11 +3,13 @@
 //----------------------------
 
 const enums = module.exports;
+
 enums.STATUS_TEXT = {
   SUCCESS: "success",
   FAIL: "fail",
   ERROR: "error",
 };
+
 enums.USER_ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
