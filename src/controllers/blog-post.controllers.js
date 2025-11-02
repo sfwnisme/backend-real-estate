@@ -3,11 +3,9 @@ const AppError = require("../utils/appError.js");
 const asyncWrapper = require("../middlewares/asyncWrapper.js");
 const BlogPost = require("../models/blog-post.model.js");
 const Image = require("../models/image.model.js");
-const { default: slugify } = require("slugify");
 const {
   calculateReadingTime,
   setPublishedAt,
-  setOgImage,
   slugGenerator,
 } = require("../utils/utils.js");
 const {
@@ -18,6 +16,7 @@ const {
 const {
   deleteImageFromDBAndBucket,
 } = require("../integrations/image.service.js");
+const { paginationService } = require("../services/pagination.service.js");
 const appError = new AppError();
 
 const blogPostControllers = module.exports;
@@ -36,20 +35,34 @@ blogPostControllers.getBlogPosts = asyncWrapper(async (req, res) => {
         200,
         STATUS_TEXT.SUCCESS,
         "data fetched successfully",
-        blogPosts
-      )
+        blogPosts,
+      ),
+    );
+});
+
+blogPostControllers.getPaginatedBlogPosts = asyncWrapper(async (req, res) => {
+  const { page, pageSize } = req.query;
+  const model = BlogPost;
+  const blogPosts = await paginationService(page, pageSize, model);
+
+  res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "data fetched successfully",
+        blogPosts,
+      ),
     );
 });
 
 blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
-  const queryPublishedOnly = { status: BLOG_POST_STATUS["PUBLISHED"] };
-  const blogPosts = await BlogPost.find(queryPublishedOnly, {
-    __v: false,
-  }).lean();
-  console.log("blogPost response", blogPosts);
-  if (!blogPosts) {
-    appError(404, STATUS_TEXT.FAIL, "not found");
-  }
+  const { page, pageSize } = req.query;
+  const model = BlogPost;
+
+  const filter = { status: BLOG_POST_STATUS["PUBLISHED"] };
+  const blogPosts = await paginationService(page, pageSize, model, filter);
 
   res
     .status(200)
@@ -58,17 +71,21 @@ blogPostControllers.getPublishedBlogPosts = asyncWrapper(async (req, res) => {
         200,
         STATUS_TEXT.SUCCESS,
         "data fetched successfully",
-        blogPosts
-      )
+        blogPosts,
+      ),
     );
 });
 
-blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
-  const queryDraftOnly = { status: BLOG_POST_STATUS["DRAFT"] };
-  const blogPosts = await BlogPost.find(queryDraftOnly, { __v: false }).lean();
-  console.log("blogPost response", blogPosts);
+blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res, next) => {
+  const { page, pageSize } = req.query;
+  const model = BlogPost;
+
+  const filter = { status: BLOG_POST_STATUS["DRAFT"] };
+  const blogPosts = await paginationService(page, pageSize, model, filter);
+
   if (!blogPosts) {
-    appError(404, STATUS_TEXT.FAIL, "not found");
+    appError.create(404, STATUS_TEXT.FAIL, blogPosts.message);
+    return next(appError);
   }
 
   res
@@ -78,8 +95,8 @@ blogPostControllers.getDraftBlogPosts = asyncWrapper(async (req, res) => {
         200,
         STATUS_TEXT.SUCCESS,
         "data fetched successfully",
-        blogPosts
-      )
+        blogPosts,
+      ),
     );
 });
 
@@ -95,7 +112,7 @@ blogPostControllers.getBlogPost = asyncWrapper(async (req, res, next) => {
   res
     .status(200)
     .json(
-      formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", blog)
+      formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", blog),
     );
 });
 
@@ -131,7 +148,7 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
       400,
       STATUS_TEXT.FAIL,
       "blog post creation faild",
-      blogPostCreation
+      blogPostCreation,
     );
     return next(appError);
   }
@@ -149,14 +166,14 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
           201,
           STATUS_TEXT.SUCCESS,
           "the blog post created successfully, but the images not found, you can add them by update the blog post",
-          blogPostCreation
-        )
+          blogPostCreation,
+        ),
       );
   }
 
   await Image.updateMany(
     { ownerId: tempOwnerId },
-    { $set: { ownerId: blogPostId, isTemp: isTemp } }
+    { $set: { ownerId: blogPostId, isTemp: isTemp } },
   );
 
   res
@@ -166,8 +183,8 @@ blogPostControllers.createBlogPost = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The blog created successfully",
-        blogPostCreation
-      )
+        blogPostCreation,
+      ),
     );
 });
 
@@ -180,7 +197,7 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
   await BlogPost.updateOne(
     { _id: blogPostId },
     { ...body },
-    { runValidators: true }
+    { runValidators: true },
   );
   const updateBlogPost = await BlogPost.findById(blogPostId);
 
@@ -191,8 +208,8 @@ blogPostControllers.updateBlogPost = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "operation success",
-        updateBlogPost
-      )
+        updateBlogPost,
+      ),
     );
 });
 
@@ -205,7 +222,7 @@ blogPostControllers.updateBlogPostSlug = asyncWrapper(
       {
         slug: generateSlug,
       },
-      { new: true, runValidators: true, select: "slug -_id" }
+      { new: true, runValidators: true, select: "slug -_id" },
     );
 
     res
@@ -215,10 +232,10 @@ blogPostControllers.updateBlogPostSlug = asyncWrapper(
           200,
           STATUS_TEXT.SUCCESS,
           "slug updated successfully",
-          blogPostSlugUpdate
-        )
+          blogPostSlugUpdate,
+        ),
       );
-  }
+  },
 );
 
 blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
@@ -243,13 +260,13 @@ blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
           200,
           STATUS_TEXT.SUCCESS,
           "blog post deleted successfully, but no images found to be deleted",
-          blogPostDeletion
-        )
+          blogPostDeletion,
+        ),
       );
   }
 
   const blogPostImageDeletion = await deleteImageFromDBAndBucket(
-    findBlogPostImage._id
+    findBlogPostImage._id,
   );
 
   return res
@@ -259,8 +276,8 @@ blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "blog post delete completely",
-        { blog: blogPostDeletion, image: blogPostImageDeletion }
-      )
+        { blog: blogPostDeletion, image: blogPostImageDeletion },
+      ),
     );
 });
 
@@ -278,11 +295,11 @@ blogPostControllers.deleteManyBlogPosts = asyncWrapper(
             200,
             STATUS_TEXT.SUCCESS,
             "blog posts deleted successfully",
-            deleteAll
-          )
+            deleteAll,
+          ),
         );
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );

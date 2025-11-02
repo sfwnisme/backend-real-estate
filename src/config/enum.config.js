@@ -3,15 +3,17 @@
 //----------------------------
 
 const enums = module.exports;
+
 enums.STATUS_TEXT = {
   SUCCESS: "success",
   FAIL: "fail",
   ERROR: "error",
 };
+
 enums.USER_ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
-  CSR: "csr",
+  CONTENT: "content",
   VIEW_ONLY: "view_only",
 };
 

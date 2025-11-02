@@ -13,52 +13,55 @@ const {
 } = require("../validations/property.validation");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 
-router.use(verifyToken);
-
-router
-  .route("/")
-  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getProperties);
+// router.route("/").get(controllers.getProperties);
+router.route("/").get(controllers.getPaginatedProperties);
 
 router
   .route("/create")
   .post(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     createPropertyValidation(),
     validationErrorHandlerMiddleware,
-    controllers.createProperty
+    controllers.createProperty,
   );
 
 router
   .route("/:slug")
   .get(
-    authorizedRole(...Object.values(USER_ROLES)),
     singlePropertyValidation(),
     validationErrorHandlerMiddleware,
-    controllers.getProperty
+    controllers.getProperty,
   );
 
 router
   .route("/update-slug")
   .patch(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     updatePropertySlugValidation(),
     validationErrorHandlerMiddleware,
-    controllers.updatePropertySlug
+    controllers.updatePropertySlug,
   );
 
 router
   .route("/:propertyId")
   .patch(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     updatePropertyValidation(),
     validationErrorHandlerMiddleware,
-    controllers.updateProperty
-  )
+    controllers.updateProperty,
+  );
+
+router
+  .route("/delete/:propertyId")
   .delete(
-    authorizedRole(USER_ROLES.ADMIN),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     deletePropertyValidation(),
     validationErrorHandlerMiddleware,
-    controllers.deleteProperty
+    controllers.deleteProperty,
   );
 
 module.exports = router;

@@ -13,67 +13,75 @@ const {
   updateBlogPostSlugValidation,
 } = require("../validations/blog-post.validation");
 
-router.use(verifyToken);
+// router.use(verifyToken);
 
-router
-  .route("/")
-  .get(authorizedRole(...Object.values(USER_ROLES)), controllers.getBlogPosts);
-router
-  .route("/published")
-  .get(
-    authorizedRole(...Object.values(USER_ROLES)),
-    controllers.getPublishedBlogPosts
-  );
+// router.route("/").get(controllers.getBlogPosts);
+router.route("/").get(controllers.getPaginatedBlogPosts);
+router.route("/published").get(controllers.getPublishedBlogPosts);
 router
   .route("/draft")
   .get(
+    verifyToken,
     authorizedRole(...Object.values(USER_ROLES)),
-    controllers.getDraftBlogPosts
+    controllers.getDraftBlogPosts,
   );
 
 router
   .route("/create")
   .post(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     createBlogPostValidation(),
     validationErrorHandlerMiddleware,
-    controllers.createBlogPost
+    controllers.createBlogPost,
   );
 
 router
   .route("/:slug")
   .get(
-    authorizedRole(...Object.values(USER_ROLES)),
     singleBlogPostValidation(),
     validationErrorHandlerMiddleware,
-    controllers.getBlogPost
+    controllers.getBlogPost,
   );
 
 router
   .route("/update-slug")
   .patch(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     updateBlogPostSlugValidation(),
     validationErrorHandlerMiddleware,
-    controllers.updateBlogPostSlug
+    controllers.updateBlogPostSlug,
   );
 
 // delet this route, it's only for testing
-router.route("/delete-many").delete(controllers.deleteManyBlogPosts);
-
+// router
+//   .route("/delete-many")
+//   .delete(
+//     verifyToken,
+//     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
+//     updateBlogPostValidation(),
+//     controllers.deleteManyBlogPosts,
+//   );
+//
 router
   .route("/:blogPostId")
   .patch(
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CSR),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     updateBlogPostValidation(),
     validationErrorHandlerMiddleware,
-    controllers.updateBlogPost
-  )
+    controllers.updateBlogPost,
+  );
+
+router
+  .route("/delete/:blogPostId")
   .delete(
-    authorizedRole(USER_ROLES.ADMIN),
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     deleteBlogPostValidation(),
     validationErrorHandlerMiddleware,
-    controllers.deleteBlogPost
+    controllers.deleteBlogPost,
   );
 
 module.exports = router;
