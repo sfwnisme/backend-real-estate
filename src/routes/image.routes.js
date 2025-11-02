@@ -12,7 +12,7 @@ router
   .route("/create")
   .post(
     verifyToken,
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.single("file"),
     controllers.createImage,
   );
@@ -20,7 +20,7 @@ router
   .route("/create-bulk")
   .post(
     verifyToken,
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.array("files", FILES_CONFIGS.IMAGE.MAX_LENGTH),
     controllers.createImages,
   );
@@ -29,12 +29,13 @@ router
   .route("/delete/:imageId")
   .delete(
     verifyToken,
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     controllers.deleteImage,
   );
 
 // other routes
 router.route("/property/:propertyId").get(controllers.getPropertyImages);
+
 router
   .route("/create-temp-property-image")
   .post(
@@ -58,7 +59,7 @@ router
   .route("/create-temp-blog-post-image")
   .post(
     verifyToken,
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
     controllers.createTempBlogPostImage,
   );
@@ -66,7 +67,7 @@ router
   .route("/create-blog-post-image")
   .post(
     verifyToken,
-    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
     controllers.createBlogPostImage,
   );
