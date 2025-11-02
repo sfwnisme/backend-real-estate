@@ -8,6 +8,7 @@ const AppError = require("../utils/appError.js");
 const {
   deleteImageFromDBAndBucket,
 } = require("../integrations/image.service.js");
+const { paginationService } = require("../services/pagination.service.js");
 const appError = new AppError();
 
 const propertyControllers = module.exports;
@@ -21,8 +22,25 @@ propertyControllers.getProperties = asyncWrapper(async (req, res) => {
         200,
         STATUS_TEXT.SUCCESS,
         "data fetched successfully",
-        properties
-      )
+        properties,
+      ),
+    );
+});
+
+propertyControllers.getPaginatedProperties = asyncWrapper(async (req, res) => {
+  const { page, pageSize } = req.query;
+  const model = Property;
+  const properties = await paginationService(page, pageSize, model);
+
+  res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "data fetched successfully",
+        properties,
+      ),
     );
 });
 
@@ -33,7 +51,12 @@ propertyControllers.getProperty = asyncWrapper(async (req, res, next) => {
   res
     .status(200)
     .json(
-      formatApiResponse(200, STATUS_TEXT.SUCCESS, "operation success", property)
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "operation success",
+        property,
+      ),
     );
 });
 
@@ -65,14 +88,14 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
           201,
           STATUS_TEXT.SUCCESS,
           "the property created successfully, but the images not found, you can add them by update the blog post",
-          propertyCreation
-        )
+          propertyCreation,
+        ),
       );
   }
 
   const asignImages = await Image.updateMany(
     { ownerId: tempOwnerId },
-    { $set: { ownerId: propertyId, isTemp: isTemp } }
+    { $set: { ownerId: propertyId, isTemp: isTemp } },
   );
 
   res
@@ -82,11 +105,10 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The property created successfully",
-        propertyCreation
-      )
+        propertyCreation,
+      ),
     );
 });
-
 
 propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
   const {
@@ -97,7 +119,7 @@ propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
   await Property.updateOne(
     { _id: propertyId },
     { ...body },
-    { runValidators: true }
+    { runValidators: true },
   );
   const updatedProperty = await Property.findById(propertyId);
   res
@@ -107,8 +129,8 @@ propertyControllers.updateProperty = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "operation success",
-        updatedProperty
-      )
+        updatedProperty,
+      ),
     );
 });
 
@@ -121,7 +143,7 @@ propertyControllers.updatePropertySlug = asyncWrapper(
       {
         slug: generateSlug,
       },
-      { new: true, runValidators: true, select: "slug -_id" }
+      { new: true, runValidators: true, select: "slug -_id" },
     );
 
     res
@@ -131,10 +153,10 @@ propertyControllers.updatePropertySlug = asyncWrapper(
           200,
           STATUS_TEXT.SUCCESS,
           "slug updated successfully",
-          propertySlugUpdate
-        )
+          propertySlugUpdate,
+        ),
       );
-  }
+  },
 );
 
 propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
@@ -158,8 +180,8 @@ propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
           204,
           STATUS_TEXT.SUCCESS,
           "property deleted, but there is no related images to be deleted",
-          propertyDeletion
-        )
+          propertyDeletion,
+        ),
       );
   }
 
@@ -176,7 +198,7 @@ propertyControllers.deleteProperty = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "property deleted completely",
-        { property: propertyDeletion, images: propertyImagesDeletion }
-      )
+        { property: propertyDeletion, images: propertyImagesDeletion },
+      ),
     );
 });

@@ -15,7 +15,8 @@ const {
 
 // router.use(verifyToken);
 
-router.route("/").get(controllers.getBlogPosts);
+// router.route("/").get(controllers.getBlogPosts);
+router.route("/").get(controllers.getPaginatedBlogPosts);
 router.route("/published").get(controllers.getPublishedBlogPosts);
 router
   .route("/draft")
@@ -71,7 +72,7 @@ router
     updateBlogPostValidation(),
     validationErrorHandlerMiddleware,
     controllers.updateBlogPost,
-  )
+  );
 
 router
   .route("/delete/:blogPostId")

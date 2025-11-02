@@ -13,7 +13,8 @@ const {
 } = require("../validations/property.validation");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 
-router.route("/").get(controllers.getProperties);
+// router.route("/").get(controllers.getProperties);
+router.route("/").get(controllers.getPaginatedProperties);
 
 router
   .route("/create")
