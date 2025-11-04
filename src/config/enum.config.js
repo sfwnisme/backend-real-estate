@@ -19,7 +19,8 @@ enums.USER_ROLES = {
 
 enums.PROPERTY_TYPE = {
   HOUSE: "house",
-  APPARTMENT: "appartment",
+  APARTMENT: "apartment",
+  VILLA: "villa",
   STUDIO: "studio",
   CHALET: "chalet",
 };
