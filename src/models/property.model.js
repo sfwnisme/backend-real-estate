@@ -64,10 +64,15 @@ const propertySchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    video: {
+      type: String,
+      required: false,
+      default: "",
+    },
     hide: {
       type: Boolean,
       required: false,
-      default: false
+      default: false,
     },
     address: {
       country: { type: String, required: false },
