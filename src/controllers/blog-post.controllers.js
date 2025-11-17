@@ -242,7 +242,7 @@ blogPostControllers.updateBlogPostSlug = asyncWrapper(
 blogPostControllers.deleteBlogPost = asyncWrapper(async (req, res, next) => {
   const { blogPostId } = req.params;
   const ownerId = blogPostId;
-  const ownerModel = MODELS.BLOG;
+  const ownerModel = MODELS.BLOG_POST;
 
   const findBlogPostImage = await Image.findOne({ ownerId, ownerModel });
 

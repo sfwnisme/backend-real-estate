@@ -76,8 +76,9 @@ enums.FILES_CONFIGS = {
   },
 };
 
+// mandatory: values must be the same as the model name
 enums.MODELS = {
   PROPERTY: "Property",
-  BLOG: "Blog",
+  BLOG_POST: "BlogPost",
   USER: "User",
 };

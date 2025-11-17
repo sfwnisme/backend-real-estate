@@ -260,7 +260,7 @@ imageControllers.createTempPropertyImage = asyncWrapper(
 
 imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
   const { blogPostId } = req.params;
-  const model = MODELS.BLOG;
+  const model = MODELS.BLOG_POST;
   console.log("pass", blogPostId);
   const image = await Image.findOne(
     { ownerId: blogPostId, ownerModel: model },
@@ -300,7 +300,7 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
   } = req;
   const imageFile = file;
   const ownerId = blogPostId;
-  const ownerModel = MODELS.BLOG;
+  const ownerModel = MODELS.BLOG_POST;
   const bucketDir = FILES_CONFIGS.DIRS.BLOG;
   const isTemp = false
 
@@ -332,7 +332,7 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
     } = req;
     const imageFile = file
     const tempOwnerId = tempId;
-    const ownerModel = MODELS.BLOG;
+    const ownerModel = MODELS.BLOG_POST;
     const bucketDir = FILES_CONFIGS.DIRS.BLOG;
     const isTemp = true;
 
