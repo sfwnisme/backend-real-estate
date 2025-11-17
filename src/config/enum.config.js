@@ -60,7 +60,7 @@ enums.TWITTER_CARD_TYPES = {
 
 enums.FILES_CONFIGS = {
   DIRS: {
-    DEFAULT: "default",
+    DEFAULT: "default/",
     IMAGES: "images/",
     PROPERTIES: "properties/",
     SERVICES: "services/",
