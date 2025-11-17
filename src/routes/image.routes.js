@@ -33,6 +33,14 @@ router
   );
 
 router
+  .route("/delete/temp-images")
+  .delete(
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+    controllers.deleteTempImages,
+  );
+
+router
   .route("/delete/:imageId")
   .delete(
     verifyToken,
