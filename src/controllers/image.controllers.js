@@ -232,13 +232,14 @@ imageControllers.createTempPropertyImage = asyncWrapper(
       file,
       body: { tempId },
     } = req;
+    const imageFile = file
     const tempOwnerId = tempId;
     const ownerModel = MODELS.PROPERTY;
     const bucketDir = FILES_CONFIGS.DIRS.PROPERTIES;
     const isTemp = true;
 
     const createImageRes = await createImage(
-      file,
+      imageFile,
       tempOwnerId,
       ownerModel,
       bucketDir,
@@ -301,13 +302,16 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
   const ownerId = blogPostId;
   const ownerModel = MODELS.BLOG;
   const bucketDir = FILES_CONFIGS.DIRS.BLOG;
+  const isTemp = false
 
   const createImageRes = await createImage(
     imageFile,
     ownerId,
     ownerModel,
-    bucketDir
+    bucketDir,
+    isTemp
   );
+
   res
     .status(createImageRes.status)
     .json(
@@ -326,13 +330,14 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
       file,
       body: { tempId },
     } = req;
+    const imageFile = file
     const tempOwnerId = tempId;
     const ownerModel = MODELS.BLOG;
     const bucketDir = FILES_CONFIGS.DIRS.BLOG;
     const isTemp = true;
 
     const createImageRes = await createImage(
-      file,
+      imageFile,
       tempOwnerId,
       ownerModel,
       bucketDir,
@@ -377,4 +382,29 @@ imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
         imageToDelete
       )
     );
+});
+
+imageControllers.deleteTempImages = asyncWrapper(async (req, res, next) => {
+  //delete from aws s3 bucket
+  const tempImages = await Image.find({ isTemp: true });
+  console.log("temp images =>>>>>", tempImages);
+  const deleteTempImagesPromises = tempImages.map((img) =>
+    deleteImageFromDBAndBucket(String(img._id))
+  );
+  console.log("array images", deleteTempImagesPromises);
+  const tempImagesDeletion = await Promise.all(deleteTempImagesPromises);
+  
+  // Check if any deletion failed
+  const noImagesFound = tempImagesDeletion.filter(
+    (result) => result.statusText !== STATUS_TEXT.SUCCESS
+  );
+
+  return res.status(200).json(
+    formatApiResponse(
+      200, // to return the response
+      STATUS_TEXT.SUCCESS,
+      `deleted successfully`,
+      {deleted:tempImagesDeletion , notFound:noImagesFound}
+    )
+  );
 });
