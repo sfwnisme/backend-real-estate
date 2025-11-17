@@ -5,6 +5,7 @@ const { putObject, deleteObject } = require("./aws-s3.service");
 const AppError = require("../utils/appError");
 const { default: imageSize } = require("image-size");
 const Image = require("../models/image.model");
+const { default: mongoose } = require("mongoose");
 const appError = new AppError();
 
 const imageServices = module.exports;
@@ -60,6 +61,14 @@ imageServices.createImage = async (
         STATUS_TEXT.ERROR,
         "url or key is not found"
       );
+    }
+
+    // extra validation: check if owner is found
+    const imageOwner = await mongoose.model(ownerModel).findById(ownerId);
+    if (!isTemp && !imageOwner) {
+      isTemp = true;
+    } else {
+      isTemp = false;
     }
 
     // upload image to db
