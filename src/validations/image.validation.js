@@ -10,7 +10,11 @@ imageValidation.imageTempIdValidation = () => {
       .withMessage(`${"tempId"} must be a valid mongoId`),
   ];
 };
-imageValidation.imageOwnerIdImageValidation = (field, ownerModel) => {
+imageValidation.ownerImageValidation = (
+  field,
+  ownerModel,
+  isFeatured = false
+) => {
   return [
     body(field)
       .trim()
@@ -20,5 +24,9 @@ imageValidation.imageOwnerIdImageValidation = (field, ownerModel) => {
       .withMessage(`${field} must be a valid mongoId`)
       .custom(async (value) => documentExists("_id", value, ownerModel, false))
       .withMessage(`${field} does not exist`),
+    body("isFeatured")
+      .optional()
+      .isBoolean()
+      .withMessage(`${"isFeatured"} must be a boolean`),
   ];
 };
