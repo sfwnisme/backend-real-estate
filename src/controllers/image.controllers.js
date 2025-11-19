@@ -198,7 +198,7 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
 imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
   const {
     file,
-    body: { propertyId },
+    body: { propertyId, isFeatured },
   } = req;
 
   const imageFile = file;
@@ -212,7 +212,8 @@ imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
     ownerId,
     ownerModel,
     bucketDir,
-    isTemp
+    isTemp,
+    isFeatured
   );
 
   res
@@ -296,7 +297,7 @@ imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
 imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
   const {
     file,
-    body: { blogPostId },
+    body: { blogPostId, isFeatured },
   } = req;
   const imageFile = file;
   const ownerId = blogPostId;
@@ -309,7 +310,8 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
     ownerId,
     ownerModel,
     bucketDir,
-    isTemp
+    isTemp,
+    isFeatured
   );
 
   res

@@ -87,7 +87,7 @@ propertyControllers.createProperty = asyncWrapper(async (req, res, next) => {
         formatApiResponse(
           201,
           STATUS_TEXT.SUCCESS,
-          "the property created successfully, but the images not found, you can add them by update the blog post",
+          "the property created successfully, but the images not found, you can add them by update the property",
           propertyCreation,
         ),
       );

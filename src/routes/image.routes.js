@@ -10,7 +10,7 @@ const authorizedRole = require("../middlewares/authorizedRole");
 const validationErrorHandlerMiddleware = require("../middlewares/validationErrorHandler.middleware");
 const {
   imageTempIdValidation,
-  imageOwnerIdImageValidation,
+  ownerImageValidation,
 } = require("../validations/image.validation");
 
 router.route("/").get(controllers.getImages);
@@ -67,7 +67,7 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.single("file"),
-    imageOwnerIdImageValidation("propertyId", Property),
+    ownerImageValidation("propertyId", Property),
     validationErrorHandlerMiddleware,
     controllers.createPropertyImage,
   );
@@ -90,7 +90,7 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
-    imageOwnerIdImageValidation("blogPostId", BlogPost),
+    ownerImageValidation("blogPostId", BlogPost),
     validationErrorHandlerMiddleware,
     controllers.createBlogPostImage,
   );

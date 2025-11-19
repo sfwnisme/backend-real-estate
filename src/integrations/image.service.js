@@ -11,12 +11,13 @@ const appError = new AppError();
 const imageServices = module.exports;
 
 /**
- *
- * @param {File} file
- * @param {ObjectId} ownerId
- * @param {enum} ownerModel
- * @param {enum} bucketDir
- * @param {boolean} isTemp
+ * @description create image to db and upload it to aws s3 bucket
+ * @param {File} file - the file to be uploaded
+ * @param {ObjectId} ownerId - the owner id of the image
+ * @param {enum} ownerModel - the owner model of the image
+ * @param {enum} bucketDir - default is "default/" if not provided, it is the directory name
+ * @param {boolean} isTemp - default is true, if false then it will be deleted from db and aws s3 bucket on a corn-job
+ * @param {boolean} isFeatured - default is false, if true then it will be the main image
  * @returns
  */
 
@@ -25,7 +26,8 @@ imageServices.createImage = async (
   ownerId,
   ownerModel,
   bucketDir = FILES_CONFIGS.DIRS.DEFAULT,
-  isTemp = true
+  isTemp = true,
+  isFeatured = false
 ) => {
   try {
     if (!file) {
@@ -85,7 +87,7 @@ imageServices.createImage = async (
         width: dimensions?.width,
         height: dimensions?.height,
       },
-      isFeatured: false,
+      isFeatured,
       isTemp,
     };
 
