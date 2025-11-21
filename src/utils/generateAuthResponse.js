@@ -20,9 +20,11 @@ module.exports = (user, returnToken = true) => {
   
   // if user register
   if(!returnToken) return returnedUserData
+
+  const expiresIn = process.env.NODE_ENV === 'production' ? '1h' : '7d'
   
   // if user login, token is crucial
-  const token = JWT.sign(returnedUserData, process.env.JWT_SECRET_KEY, { expiresIn: '1h' })
+  const token = JWT.sign(returnedUserData, process.env.JWT_SECRET_KEY, { expiresIn })
   return {
     ...returnedUserData,
     token

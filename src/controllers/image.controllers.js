@@ -204,7 +204,7 @@ imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
   const imageFile = file;
   const ownerId = propertyId;
   const ownerModel = MODELS.PROPERTY;
-  const bucketDir = FILES_CONFIGS.DIRS.PROPERTY;
+  const bucketDir = FILES_CONFIGS.DIRS.PROPERTIES;
   const isTemp = false;
 
   const createImageRes = await createImage(
