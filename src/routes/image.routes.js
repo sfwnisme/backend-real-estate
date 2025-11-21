@@ -38,7 +38,7 @@ router
   .patch(
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
-    makeImageFeaturedValidation(MODELS.PROPERTY, Property),
+    makeImageFeaturedValidation(),
     validationErrorHandlerMiddleware,
     controllers.makeImageFeatured
   );
