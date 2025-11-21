@@ -233,7 +233,7 @@ imageControllers.createTempPropertyImage = asyncWrapper(
       file,
       body: { tempId },
     } = req;
-    const imageFile = file
+    const imageFile = file;
     const tempOwnerId = tempId;
     const ownerModel = MODELS.PROPERTY;
     const bucketDir = FILES_CONFIGS.DIRS.PROPERTIES;
@@ -303,7 +303,7 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
   const ownerId = blogPostId;
   const ownerModel = MODELS.BLOG_POST;
   const bucketDir = FILES_CONFIGS.DIRS.BLOG;
-  const isTemp = false
+  const isTemp = false;
 
   const createImageRes = await createImage(
     imageFile,
@@ -332,7 +332,7 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
       file,
       body: { tempId },
     } = req;
-    const imageFile = file
+    const imageFile = file;
     const tempOwnerId = tempId;
     const ownerModel = MODELS.BLOG_POST;
     const bucketDir = FILES_CONFIGS.DIRS.BLOG;
@@ -357,6 +357,38 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
       );
   }
 );
+
+imageControllers.makeImageFeatured = asyncWrapper(async (req, res, next) => {
+  const { imageId, ownerId } = req.body;
+
+  // Use bulkWrite to perform both updates in a single request
+  const results = await Image.bulkWrite([
+    {
+      updateMany: {
+        filter: { ownerId: ownerId, isFeatured: true, _id: { $ne: imageId } },
+        update: { isFeatured: false },
+      },
+    },
+    {
+      updateOne: {
+        filter: { _id: imageId, isFeatured: false },
+        update: { isFeatured: true },
+      },
+    },
+  ]);
+  // Fetch the updated featured image to return it in the response
+  const newFeaturedImage = await Image.findById(imageId).lean();
+  return res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "image made featured successfully",
+        newFeaturedImage
+      )
+    );
+});
 
 imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
   const { imageId } = req.params;
@@ -395,7 +427,7 @@ imageControllers.deleteTempImages = asyncWrapper(async (req, res, next) => {
   );
   console.log("array images", deleteTempImagesPromises);
   const tempImagesDeletion = await Promise.all(deleteTempImagesPromises);
-  
+
   // Check if any deletion failed
   const noImagesFound = tempImagesDeletion.filter(
     (result) => result.statusText !== STATUS_TEXT.SUCCESS
@@ -406,7 +438,7 @@ imageControllers.deleteTempImages = asyncWrapper(async (req, res, next) => {
       200, // to return the response
       STATUS_TEXT.SUCCESS,
       `deleted successfully`,
-      {deleted:tempImagesDeletion , notFound:noImagesFound}
+      { deleted: tempImagesDeletion, notFound: noImagesFound }
     )
   );
 });

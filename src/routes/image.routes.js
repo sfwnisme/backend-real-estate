@@ -11,6 +11,7 @@ const validationErrorHandlerMiddleware = require("../middlewares/validationError
 const {
   imageTempIdValidation,
   ownerImageValidation,
+  makeImageFeaturedValidation,
 } = require("../validations/image.validation");
 
 router.route("/").get(controllers.getImages);
@@ -21,7 +22,7 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.single("file"),
-    controllers.createImage,
+    controllers.createImage
   );
 router
   .route("/create-bulk")
@@ -29,7 +30,17 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
     upload.array("files", FILES_CONFIGS.IMAGE.MAX_LENGTH),
-    controllers.createImages,
+    controllers.createImages
+  );
+
+router
+  .route("/make-image-featured")
+  .patch(
+    verifyToken,
+    authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
+    makeImageFeaturedValidation(MODELS.PROPERTY, Property),
+    validationErrorHandlerMiddleware,
+    controllers.makeImageFeatured
   );
 
 router
@@ -37,7 +48,7 @@ router
   .delete(
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-    controllers.deleteTempImages,
+    controllers.deleteTempImages
   );
 
 router
@@ -45,7 +56,7 @@ router
   .delete(
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-    controllers.deleteImage,
+    controllers.deleteImage
   );
 
 // other routes
@@ -59,7 +70,7 @@ router
     upload.single("file"),
     imageTempIdValidation(),
     validationErrorHandlerMiddleware,
-    controllers.createTempPropertyImage,
+    controllers.createTempPropertyImage
   );
 router
   .route("/create-property-image")
@@ -69,7 +80,7 @@ router
     upload.single("file"),
     ownerImageValidation("propertyId", Property),
     validationErrorHandlerMiddleware,
-    controllers.createPropertyImage,
+    controllers.createPropertyImage
   );
 
 // blog-post images
@@ -82,7 +93,7 @@ router
     upload.single("file"),
     imageTempIdValidation(),
     validationErrorHandlerMiddleware,
-    controllers.createTempBlogPostImage,
+    controllers.createTempBlogPostImage
   );
 router
   .route("/create-blog-post-image")
@@ -90,9 +101,9 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
-    ownerImageValidation("blogPostId", BlogPost),
+    ownerImageValidation(MODELS.BLOG_POST, BlogPost),
     validationErrorHandlerMiddleware,
-    controllers.createBlogPostImage,
+    controllers.createBlogPostImage
   );
 
 module.exports = router;
