@@ -29,18 +29,18 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ min: 10, max: 120 })
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} length must contain 10 to 120 characters`
+          `"${value}" ${path} length must contain 10 to 120 characters`,
       )
       .custom(async (value) => checkDocTitleUniqueOnCreate(value, BlogPost))
       .withMessage("title exists"),
-      
+
     body("excerpt")
       .notEmpty()
       .withMessage("Excerpt/summary is required")
       .isLength({ min: 20, max: 300 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be between 20 and 300 characters`
+          `${value} ${path} length should be between 20 and 300 characters`,
       ),
 
     body("content")
@@ -49,7 +49,7 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ min: 20, max: 10000 }) // min: 300 in production
       .withMessage(
         (value, { path }) =>
-          `"${value}" ${path} length should be between 500 and 10000 characters`
+          `${path} length should be between 500 and 10000 characters`,
       ),
 
     body("status")
@@ -59,8 +59,8 @@ blogValidation.createBlogPostValidation = () => {
       .withMessage(
         (value) =>
           `${value} status must be one of [${Object.values(
-            BLOG_POST_STATUS
-          ).join(", ")}]`
+            BLOG_POST_STATUS,
+          ).join(", ")}]`,
       ),
 
     // --- META OBJECT AND NESTED FIELDS ---
@@ -80,11 +80,11 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ max: 120 })
       .withMessage("Meta title must be a string under 120 characters.")
       .custom(async (value, { req, path }) =>
-        documentExists(path, value, BlogPost, true)
+        documentExists(path, value, BlogPost, true),
       )
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} is already taken, choose another one`
+          `"${value}" ${path} is already taken, choose another one`,
       ),
 
     body("meta.description")
@@ -124,19 +124,19 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ min: 10, max: 120 })
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} length must contain 10 to 120 characters`
+          `"${value}" ${path} length must contain 10 to 120 characters`,
       )
       // Check if the title already exists (for generating a unique slug)
       .custom((value, { req }) =>
         checkDocumentTitleUniqueOnUpdate(
           value,
           BlogPost,
-          req.params?.blogPostId
-        )
+          req.params?.blogPostId,
+        ),
       )
       .withMessage(
         (value, { req, path }) =>
-          `${value} ${path} is already taken, choose another one`
+          `${value} ${path} is already taken, choose another one`,
       ),
 
     body("excerpt")
@@ -146,7 +146,7 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ min: 20, max: 300 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be between 20 and 300 characters`
+          `${value} ${path} length should be between 20 and 300 characters`,
       ),
 
     body("content")
@@ -156,7 +156,7 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ min: 20, max: 10000 }) // min: 300 in production
       .withMessage(
         (value, { path }) =>
-          `"${value}" ${path} length should be between 500 and 10000 characters`
+          `${path} length should be between 500 and 10000 characters`,
       ),
 
     body("status")
@@ -167,8 +167,8 @@ blogValidation.updateBlogPostValidation = () => {
       .withMessage(
         (value) =>
           `${value} status must be one of [${Object.values(
-            BLOG_POST_STATUS
-          ).join(", ")}]`
+            BLOG_POST_STATUS,
+          ).join(", ")}]`,
       ),
 
     // --- META OBJECT AND NESTED FIELDS ---
@@ -188,11 +188,11 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ max: 120 })
       .withMessage("Meta title must be a string under 120 characters.")
       .custom(async (value, { req, path }) =>
-        documentExists(path, value, BlogPost, true)
+        documentExists(path, value, BlogPost, true),
       )
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} is already taken, choose another one`
+          `"${value}" ${path} is already taken, choose another one`,
       ),
 
     body("meta.description")
