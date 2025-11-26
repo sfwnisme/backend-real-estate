@@ -49,7 +49,7 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ min: 20, max: 10000 }) // min: 300 in production
       .withMessage(
         (value, { path }) =>
-          `${path} length should be between 500 and 10000 characters`,
+          `${path} length should be between 20 and 10000 characters`,
       ),
 
     body("status")
@@ -153,10 +153,10 @@ blogValidation.updateBlogPostValidation = () => {
       .optional()
       .notEmpty()
       .withMessage("Content is required")
-      .isLength({ min: 20, max: 10000 }) // min: 300 in production
+      .isLength({ min: 300, max: 10000 }) // min: 300 in production
       .withMessage(
         (value, { path }) =>
-          `${path} length should be between 500 and 10000 characters`,
+          `${path} length should be between 300 and 10000 characters`,
       ),
 
     body("status")
