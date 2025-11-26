@@ -101,7 +101,7 @@ router
     verifyToken,
     authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.CONTENT),
     upload.single("file"),
-    ownerImageValidation(MODELS.BLOG_POST, BlogPost),
+    ownerImageValidation("blogPostId", BlogPost),
     validationErrorHandlerMiddleware,
     controllers.createBlogPostImage
   );
