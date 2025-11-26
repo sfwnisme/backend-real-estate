@@ -37,10 +37,10 @@ blogValidation.createBlogPostValidation = () => {
     body("excerpt")
       .notEmpty()
       .withMessage("Excerpt/summary is required")
-      .isLength({ min: 20, max: 300 })
+      .isLength({ min: 20 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be between 20 and 300 characters`,
+          `${value} ${path} length should be 20 characters minimum`,
       ),
 
     body("content")
@@ -143,10 +143,10 @@ blogValidation.updateBlogPostValidation = () => {
       .optional()
       .notEmpty()
       .withMessage("Excerpt/summary is required")
-      .isLength({ min: 20, max: 300 })
+      .isLength({ min: 20 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be between 20 and 300 characters`,
+          `${value} ${path} length should be 20 characters minimum`,
       ),
 
     body("content")
