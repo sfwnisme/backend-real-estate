@@ -173,11 +173,16 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ max: 120 })
       .withMessage("Meta title must be a string under 120 characters.")
       .custom(async (value, { req, path }) =>
-        documentExists(path, value, BlogPost, true),
+        checkDocumentFieldUniqueOnUpdate(
+          path,
+          value,
+          BlogPost,
+          req.params?.blogPostId
+        )
       )
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} is already taken, choose another one`,
+          `${path}: "${value}", is already taken, choose another ${path}`
       ),
 
     body("meta.description")
