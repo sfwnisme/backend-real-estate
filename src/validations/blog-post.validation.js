@@ -5,7 +5,6 @@ const { BLOG_POST_STATUS } = require("../config/enum.config");
 const {
   documentExists,
   checkSingleRequestByParam,
-  checkDocumentTitleUniqueOnUpdate,
   checkObjectId,
   checkDocTitleUniqueOnCreate,
   checkDocumentFieldUniqueOnUpdate,
