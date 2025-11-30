@@ -86,25 +86,27 @@ validatorHelpers.checkDocTitleUniqueOnCreate = async (value, model) => {
 };
 
 /**
- * Checks if the document title is unique on update.
- * @param {string} field - The field to check uniqueness for.
- * @param {string} value - The new value to check uniqueness for.
+ * Checks if the document field is unique on update (for example: title is unique on create and update).
+ * @param {string} field - The field to check uniqueness for (eg: "title").
+ * @param {string} value - The new value to check uniqueness.
  * @param {Model | null} model - The Mongoose model to query (eg: BlogPost).
  * @param {string | null} docId - The id of the document being updated (eg: blogPostId).
  * @returns {Promise<boolean>} - Returns true if unique, but throws error if not.
  */
-validatorHelpers.checkDocumentFieldUniqueOnUpdate = async function (
+validatorHelpers.checkDocumentFieldUniqueOnUpdate = async (
   field = "",
   value = "",
   model = null,
   docId = null
-) {
+) => {
   const modelValue = await model.findOne({
     _id: { $ne: docId },
     [field]: value,
   });
   if (modelValue) {
-    throw new Error(`${field}: "${value}", is already taken, choose another ${field} ${docId}`);
+    throw new Error(
+      `${field}: "${value}", is already taken, choose another ${field} ${docId}`
+    );
   }
   return true;
 };
