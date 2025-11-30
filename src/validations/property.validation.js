@@ -6,9 +6,9 @@ const {
   isValidateYearBuilt,
   documentExists,
   checkObjectId,
-  checkDocumentTitleUniqueOnUpdate,
   checkSingleRequestByParam,
   checkDocTitleUniqueOnCreate,
+  checkDocumentFieldUniqueOnUpdate,
 } = require("./validatorHelpers");
 const { slugGenerator } = require("../utils/utils");
 
@@ -151,16 +151,17 @@ propertyValidation.updatePropertyValidation = () => {
         (value) =>
           `"${value}" property name length should contain 15 to 120 charachters`
       )
-      .custom((value, { req }) =>
-        checkDocumentTitleUniqueOnUpdate(
+      .custom((value, { req, path }) =>
+        checkDocumentFieldUniqueOnUpdate(
+          path,
           value,
           Property,
           req.params?.propertyId
         )
       )
       .withMessage(
-        (value) =>
-          `"${value}" property title is already taken, choose another one`
+        (value, { req, path }) =>
+          `${path}: "${value}", is already taken, choose another ${path}`
       ),
     body("description")
       .optional()
