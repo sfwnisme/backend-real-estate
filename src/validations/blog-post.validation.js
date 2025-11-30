@@ -1,7 +1,5 @@
-// blog.validation.js
 const { body, param } = require("express-validator");
 
-// Assuming these utilities and enums are available:
 const BlogPost = require("../models/blog-post.model");
 const { BLOG_POST_STATUS } = require("../config/enum.config");
 const {
@@ -10,11 +8,10 @@ const {
   checkDocumentTitleUniqueOnUpdate,
   checkObjectId,
   checkDocTitleUniqueOnCreate,
+  checkDocumentFieldUniqueOnUpdate,
 } = require("./validatorHelpers");
 const { slugGenerator } = require("../utils/utils");
 
-// Reusable message helper
-const mustBeStringMsg = (field) => `${field} must be a string.`;
 const blogValidation = module.exports;
 
 blogValidation.createBlogPostValidation = () => {
@@ -29,7 +26,7 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ min: 10, max: 120 })
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} length must contain 10 to 120 characters`,
+          `"${value}" ${path} length must contain 10 to 120 characters`
       )
       .custom(async (value) => checkDocTitleUniqueOnCreate(value, BlogPost))
       .withMessage("title exists"),
@@ -40,16 +37,16 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ min: 20 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be 20 characters minimum`,
+          `${value} ${path} length should be 20 characters minimum`
       ),
 
     body("content")
       .notEmpty()
       .withMessage("Content is required")
-      .isLength({ min: 20, max: 10000 }) // min: 300 in production
+      .isLength({ min: 20})
       .withMessage(
         (value, { path }) =>
-          `${path} length should be between 20 and 10000 characters`,
+          `${path} length should be between 20 and 10000 characters`
       ),
 
     body("status")
@@ -59,19 +56,14 @@ blogValidation.createBlogPostValidation = () => {
       .withMessage(
         (value) =>
           `${value} status must be one of [${Object.values(
-            BLOG_POST_STATUS,
-          ).join(", ")}]`,
+            BLOG_POST_STATUS
+          ).join(", ")}]`
       ),
 
-    // --- META OBJECT AND NESTED FIELDS ---
-
-    // Ensure 'meta' is present (optional as it has default: {}) and is an object
     body("meta")
       .optional()
       .isObject()
       .withMessage("Meta data must be an object."),
-
-    // NESTED META FIELDS: All are optional ({ nullable: true, checkFalsy: true })
 
     body("meta.title")
       .optional({ nullable: true, checkFalsy: true })
@@ -80,11 +72,11 @@ blogValidation.createBlogPostValidation = () => {
       .isLength({ max: 120 })
       .withMessage("Meta title must be a string under 120 characters.")
       .custom(async (value, { req, path }) =>
-        documentExists(path, value, BlogPost, true),
+        documentExists(path, value, BlogPost, true)
       )
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} is already taken, choose another one`,
+          `"${value}" ${path} is already taken, choose another one`
       ),
 
     body("meta.description")
@@ -102,7 +94,7 @@ blogValidation.createBlogPostValidation = () => {
     body("meta.canonicalUrl")
       .optional({ nullable: true, checkFalsy: true })
       .isString()
-      .withMessage(mustBeStringMsg("Meta canonicalUrl")),
+      .withMessage((field) => `${field} must be a string.`),
 
     body("meta.ogImage")
       .optional({ nullable: true, checkFalsy: true })
@@ -113,7 +105,6 @@ blogValidation.createBlogPostValidation = () => {
 
 blogValidation.updateBlogPostValidation = () => {
   return [
-    // ...checkSingleRequestByParam("blogPostId", BlogPost),
     param("blogPostId")
       .custom(async (value) => documentExists("_id", value, BlogPost, false))
       .withMessage((value) => `${value} is not exist`),
@@ -124,19 +115,19 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ min: 10, max: 120 })
       .withMessage(
         (value, { req, path }) =>
-          `"${value}" ${path} length must contain 10 to 120 characters`,
+          `"${value}" ${path} length must contain 10 to 120 characters`
       )
-      // Check if the title already exists (for generating a unique slug)
-      .custom((value, { req }) =>
+
+      .custom(async (value, { req }) =>
         checkDocumentTitleUniqueOnUpdate(
           value,
           BlogPost,
-          req.params?.blogPostId,
-        ),
+          req.params?.blogPostId
+        )
       )
       .withMessage(
         (value, { req, path }) =>
-          `${value} ${path} is already taken, choose another one`,
+          `${value} ${path} is already taken, choose another one`
       ),
 
     body("excerpt")
@@ -146,17 +137,17 @@ blogValidation.updateBlogPostValidation = () => {
       .isLength({ min: 20 })
       .withMessage(
         (value, { req, location, path, options }) =>
-          `${value} ${path} length should be 20 characters minimum`,
+          `${value} ${path} length should be 20 characters minimum`
       ),
 
     body("content")
       .optional()
       .notEmpty()
       .withMessage("Content is required")
-      .isLength({ min: 300, max: 10000 }) // min: 300 in production
+      .isLength({ min: 30 }) // min: 300 in production
       .withMessage(
         (value, { path }) =>
-          `${path} length should be between 300 and 10000 characters`,
+          `${path} length should be between 300 and 10000 characters`
       ),
 
     body("status")
@@ -167,19 +158,13 @@ blogValidation.updateBlogPostValidation = () => {
       .withMessage(
         (value) =>
           `${value} status must be one of [${Object.values(
-            BLOG_POST_STATUS,
-          ).join(", ")}]`,
+            BLOG_POST_STATUS
+          ).join(", ")}]`
       ),
-
-    // --- META OBJECT AND NESTED FIELDS ---
-
-    // Ensure 'meta' is present (optional as it has default: {}) and is an object
     body("meta")
       .optional()
       .isObject()
       .withMessage("Meta data must be an object."),
-
-    // NESTED META FIELDS: All are optional ({ nullable: true, checkFalsy: true })
 
     body("meta.title")
       .optional({ nullable: true, checkFalsy: true })
@@ -210,7 +195,7 @@ blogValidation.updateBlogPostValidation = () => {
     body("meta.canonicalUrl")
       .optional({ nullable: true, checkFalsy: true })
       .isString()
-      .withMessage(mustBeStringMsg("Meta canonicalUrl")),
+      .withMessage((field) => `${field} must be a string.`),
 
     body("meta.ogImage")
       .optional({ nullable: true, checkFalsy: true })
