@@ -43,7 +43,7 @@ blogValidation.createBlogPostValidation = () => {
     body("content")
       .notEmpty()
       .withMessage("Content is required")
-      .isLength({ min: 20})
+      .isLength({ min: 20 })
       .withMessage(
         (value, { path }) =>
           `${path} length should be between 20 and 10000 characters`
@@ -117,9 +117,9 @@ blogValidation.updateBlogPostValidation = () => {
         (value, { req, path }) =>
           `"${value}" ${path} length must contain 10 to 120 characters`
       )
-
-      .custom(async (value, { req }) =>
-        checkDocumentTitleUniqueOnUpdate(
+      .custom(async (value, { req, path }) =>
+        checkDocumentFieldUniqueOnUpdate(
+          path,
           value,
           BlogPost,
           req.params?.blogPostId
