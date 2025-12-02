@@ -23,7 +23,7 @@ awsS3Services.putObject = async (file, fileName) => {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: `${fileName}`,
       Body: file,
-      ContentType: "image/jpeg",
+      ContentType: file.mimetype,
     };
 
     const command = new PutObjectCommand(params);
