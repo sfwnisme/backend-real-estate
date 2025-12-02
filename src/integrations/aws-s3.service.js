@@ -17,7 +17,7 @@ const { STATUS_TEXT } = require("../config/enum.config");
 const awsS3Services = module.exports;
 
 /**
- * 
+ *
  * @param {*} file - the file to upload
  * @param {*} fileName - the file name
  * @param {*} contentType - the content type of the file
@@ -38,7 +38,7 @@ awsS3Services.putObject = async (file, fileName, contentType) => {
 
     if (data.$metadata.httpStatusCode !== 200) {
       console.log("aws-sfwn-error", data);
-      return;
+      throw new Error("Failed to upload file to AWS S3", { cause: data });
     }
 
     const url = awsS3ImageUrl(params?.Key);
@@ -46,6 +46,10 @@ awsS3Services.putObject = async (file, fileName, contentType) => {
     return { url, key: params.Key };
   } catch (error) {
     console.error("Error:aws-s3.services.js->.putObject", error);
+    throw new Error(
+      `Failed to upload file to AWS S3 with error: `,
+      { cause: error }
+    );
   }
 };
 
