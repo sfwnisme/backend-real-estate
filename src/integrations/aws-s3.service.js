@@ -16,14 +16,21 @@ const { STATUS_TEXT } = require("../config/enum.config");
 
 const awsS3Services = module.exports;
 
-awsS3Services.putObject = async (file, fileName) => {
+/**
+ * 
+ * @param {*} file - the file to upload
+ * @param {*} fileName - the file name
+ * @param {*} contentType - the content type of the file
+ * @returns {Object} - the url and key of the uploaded file
+ */
+awsS3Services.putObject = async (file, fileName, contentType) => {
   try {
     console.log("aws-s3: filename", fileName);
     const params = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: `${fileName}`,
       Body: file,
-      ContentType: file.mimetype,
+      ContentType: contentType,
     };
 
     const command = new PutObjectCommand(params);

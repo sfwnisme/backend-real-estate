@@ -29,6 +29,7 @@ imageServices.createImage = async (
   isTemp = true,
   isFeatured = false
 ) => {
+  console.log("imageServices.createImage info: ", file, ownerId, ownerModel, bucketDir, isTemp, isFeatured);
   try {
     if (!file) {
       return formatApiResponse(
@@ -52,7 +53,7 @@ imageServices.createImage = async (
     const createUUID = generateUUID();
     const newFileName = `${awsS3Dir}${createUUID}${fileName}`;
 
-    const createImageResponse = await putObject(file.buffer, newFileName);
+    const createImageResponse = await putObject(file.buffer, newFileName, file.mimetype);
     console.log("putObject->", createImageResponse);
     const { url, key } = createImageResponse;
 
