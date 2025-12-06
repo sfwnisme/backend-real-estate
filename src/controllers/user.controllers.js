@@ -54,7 +54,7 @@ userControllers.getCurrentUser = asyncWrapper(async (req, res, next) => {
 });
 
 userControllers.register = asyncWrapper(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role = USER_ROLES.VIEW_ONLY } = req.body;
 
   const hashedPassword = await hashPassword(password);
   const registeredUser = new User({
