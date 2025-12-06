@@ -27,22 +27,30 @@ imageServices.createImage = async (
   ownerModel,
   bucketDir = FILES_CONFIGS.DIRS.DEFAULT,
   isTemp = true,
-  isFeatured = false
+  isFeatured = false,
 ) => {
-  console.log("imageServices.createImage info: ", file, ownerId, ownerModel, bucketDir, isTemp, isFeatured);
+  console.log(
+    "imageServices.createImage info: ",
+    file,
+    ownerId,
+    ownerModel,
+    bucketDir,
+    isTemp,
+    isFeatured,
+  );
   try {
     if (!file) {
       return formatApiResponse(
         400,
         STATUS_TEXT.ERROR,
-        "file not found, object key must be 'file', or you have to add image"
+        "file not found, object key must be 'file', or you have to add image",
       );
     }
     if (!ownerId) {
       return formatApiResponse(
         400,
         STATUS_TEXT.ERROR,
-        "ownerId is not defined"
+        "ownerId is not defined",
       );
     }
 
@@ -53,7 +61,11 @@ imageServices.createImage = async (
     const createUUID = generateUUID();
     const newFileName = `${awsS3Dir}${createUUID}${fileName}`;
 
-    const createImageResponse = await putObject(file.buffer, newFileName, file.mimetype);
+    const createImageResponse = await putObject(
+      file.buffer,
+      newFileName,
+      file.mimetype,
+    );
     console.log("putObject->", createImageResponse);
     const { url, key } = createImageResponse;
 
@@ -62,7 +74,7 @@ imageServices.createImage = async (
       return formatApiResponse(
         400,
         STATUS_TEXT.ERROR,
-        "url or key is not found"
+        "url or key is not found",
       );
     }
 
@@ -99,7 +111,7 @@ imageServices.createImage = async (
       201,
       STATUS_TEXT.SUCCESS,
       "The image created successfully",
-      imageCreation
+      imageCreation,
     );
   } catch (error) {
     console.error("imageServices.createImage: ", error);
@@ -120,7 +132,7 @@ imageServices.deleteImageFromDBAndBucket = async (imageId) => {
         404,
         STATUS_TEXT.ERROR,
         "image not found",
-        getImageFromDB
+        getImageFromDB,
       );
     }
 
@@ -130,7 +142,7 @@ imageServices.deleteImageFromDBAndBucket = async (imageId) => {
       return formatApiResponse(
         400,
         STATUS_TEXT.ERROR,
-        "the image key/fileName not found"
+        "the image key/fileName not found",
       );
     }
 
@@ -144,7 +156,7 @@ imageServices.deleteImageFromDBAndBucket = async (imageId) => {
         204,
         STATUS_TEXT.SUCCESS,
         "image found on db, but not on aws s3 bucket, so it has been deleted from db",
-        deletedImageFromDB
+        deletedImageFromDB,
       );
     }
 
@@ -155,7 +167,7 @@ imageServices.deleteImageFromDBAndBucket = async (imageId) => {
       deleteImageFromAwsS3Buckt.status,
       deleteImageFromAwsS3Buckt.statusText,
       "image deleted from db and aws s3",
-      deletedImageFromDB
+      deletedImageFromDB,
     );
   } catch (error) {
     console.log("imageServices.deleteImage error>> ", error);
