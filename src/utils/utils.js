@@ -3,6 +3,7 @@ const { STATUS_TEXT } = require("../config/enum.config");
 const AppError = require("./appError");
 const crypto = require("crypto");
 const path = require("path");
+const { arabic } = require("../config/slugExtend");
 
 const utils = module.exports;
 
@@ -31,7 +32,12 @@ utils.handleUndefined = (req, res, next) => {
 
 utils.slugGenerator = (text) => {
   // using hyphen(-) as a slug separator, following google SEO standards
-  return slugify(text, "-");
+  const regex = /[$*_+~.()'"!\-:@]+/g;
+  slugify.extend(arabic);
+
+  return slugify(text, {
+    remove: regex,
+  });
 };
 
 utils.calculateReadingTime = (text) => {
