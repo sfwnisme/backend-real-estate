@@ -81,4 +81,5 @@ enums.MODELS = {
   PROPERTY: "Property",
   BLOG_POST: "BlogPost",
   USER: "User",
+  SITE_INFO: "SiteInfo",
 };
