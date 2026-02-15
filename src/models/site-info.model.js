@@ -86,7 +86,6 @@ const SiteInfoSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-    _id: false,
   },
 );
 
