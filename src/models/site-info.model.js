@@ -73,6 +73,9 @@ const SettingsSchema = new mongoose.Schema(
 
 const SiteInfoSchema = new mongoose.Schema(
   {
+    logo: { type: String, trim: true, default: "" },
+    favicon: { type: String, trim: true, default: "" },
+
     ar: { type: LocalizedSchema, default: () => ({}) },
     en: { type: LocalizedSchema, default: () => ({}) },
 

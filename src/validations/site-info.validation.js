@@ -186,8 +186,23 @@ const settingsValidations = () => [
 // Exported validation functions
 // -----------------------------------------------
 
+const logoValidation = () => [
+  body("logo")
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .trim()
+    .withMessage("logo must be a string"),
+
+  body("favicon")
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .trim()
+    .withMessage("favicon must be a string"),
+];
+
 siteInfoValidation.createSiteInfoValidation = () => {
   return [
+    ...logoValidation(),
     ...localizedFieldValidations("ar"),
     ...localizedFieldValidations("en"),
     ...contactValidations(),
@@ -198,6 +213,7 @@ siteInfoValidation.createSiteInfoValidation = () => {
 
 siteInfoValidation.updateSiteInfoValidation = () => {
   return [
+    ...logoValidation(),
     ...localizedFieldValidations("ar"),
     ...localizedFieldValidations("en"),
     ...contactValidations(),
