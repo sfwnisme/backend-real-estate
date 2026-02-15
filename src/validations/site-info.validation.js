@@ -26,18 +26,6 @@ const localizedFieldValidations = (lang) => {
       .isLength({ max: 120 })
       .withMessage(`${lang}.info.name must be a string under 120 characters`),
 
-    body(`${lang}.info.email`)
-      .optional({ nullable: true, checkFalsy: true })
-      .isEmail()
-      .withMessage(`${lang}.info.email must be a valid email address`),
-
-    body(`${lang}.info.phone`)
-      .optional({ nullable: true, checkFalsy: true })
-      .isString()
-      .trim()
-      .isLength({ max: 30 })
-      .withMessage(`${lang}.info.phone must be a string under 30 characters`),
-
     body(`${lang}.info.address`)
       .optional({ nullable: true, checkFalsy: true })
       .isString()
@@ -93,91 +81,93 @@ const localizedFieldValidations = (lang) => {
 // -----------------------------------------------
 // Shared: non-localized field validations
 // -----------------------------------------------
-const socialMediaValidations = () => [
-  body("socialMedia")
-    .optional()
-    .isObject()
-    .withMessage("socialMedia must be an object"),
+const contactValidations = () => [
+  body("contact.email")
+    .optional({ nullable: true, checkFalsy: true })
+    .isEmail()
+    .withMessage("contact.email must be a valid email address"),
 
-  body("socialMedia.facebook")
+  body("contact.phone")
+    .optional({ nullable: true, checkFalsy: true })
+    .isString()
+    .trim()
+    .isLength({ max: 30 })
+    .withMessage("contact.phone must be a string under 30 characters"),
+
+  body("contact.facebook")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.facebook must be a valid URL"),
+    .withMessage("contact.facebook must be a valid URL"),
 
-  body("socialMedia.instagram")
+  body("contact.instagram")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.instagram must be a valid URL"),
+    .withMessage("contact.instagram must be a valid URL"),
 
-  body("socialMedia.twitter")
+  body("contact.x")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.twitter must be a valid URL"),
+    .withMessage("contact.x must be a valid URL"),
 
-  body("socialMedia.linkedin")
+  body("contact.linkedin")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.linkedin must be a valid URL"),
+    .withMessage("contact.linkedin must be a valid URL"),
 
-  body("socialMedia.youtube")
+  body("contact.youtube")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.youtube must be a valid URL"),
+    .withMessage("contact.youtube must be a valid URL"),
 
-  body("socialMedia.tiktok")
+  body("contact.tiktok")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.tiktok must be a valid URL"),
+    .withMessage("contact.tiktok must be a valid URL"),
 
-  body("socialMedia.snapchat")
+  body("contact.snapchat")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
     .isURL()
-    .withMessage("socialMedia.snapchat must be a valid URL"),
+    .withMessage("contact.snapchat must be a valid URL"),
 
-  body("socialMedia.whatsapp")
+  body("contact.whatsapp")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
-    .withMessage("socialMedia.whatsapp must be a string"),
+    .withMessage("contact.whatsapp must be a string"),
 ];
 
-const marketingIntegrationsValidations = () => [
-  body("marketingIntegrations")
-    .optional()
-    .isObject()
-    .withMessage("marketingIntegrations must be an object"),
-
-  body("marketingIntegrations.googleSearchConsole")
+const marketingValidations = () => [
+  body("marketing.googleSearchConsole")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
-    .withMessage("marketingIntegrations.googleSearchConsole must be a string"),
+    .withMessage("marketing.googleSearchConsole must be a string"),
 
-  body("marketingIntegrations.googleTagManager")
+  body("marketing.googleTagManager")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
-    .withMessage("marketingIntegrations.googleTagManager must be a string"),
+    .withMessage("marketing.googleTagManager must be a string"),
 
-  body("marketingIntegrations.googleMerchant")
+  body("marketing.googleMerchant")
     .optional({ nullable: true, checkFalsy: true })
     .isString()
     .trim()
-    .withMessage("marketingIntegrations.googleMerchant must be a string"),
+    .withMessage("marketing.googleMerchant must be a string"),
 ];
 
 const settingsValidations = () => [
@@ -200,8 +190,8 @@ siteInfoValidation.createSiteInfoValidation = () => {
   return [
     ...localizedFieldValidations("ar"),
     ...localizedFieldValidations("en"),
-    ...socialMediaValidations(),
-    ...marketingIntegrationsValidations(),
+    ...contactValidations(),
+    ...marketingValidations(),
     ...settingsValidations(),
   ];
 };
@@ -210,8 +200,8 @@ siteInfoValidation.updateSiteInfoValidation = () => {
   return [
     ...localizedFieldValidations("ar"),
     ...localizedFieldValidations("en"),
-    ...socialMediaValidations(),
-    ...marketingIntegrationsValidations(),
+    ...contactValidations(),
+    ...marketingValidations(),
     ...settingsValidations(),
   ];
 };
