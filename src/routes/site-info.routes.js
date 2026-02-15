@@ -23,7 +23,7 @@ router.route("/").post(
 );
 
 // PATCH /api/site-info - Admin/Manager only
-router.route("/").patch(
+router.route("/update").patch(
   verifyToken,
   authorizedRole(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
   updateSiteInfoValidation(),
