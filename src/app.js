@@ -14,12 +14,19 @@ connectDB();
 
 // Middlewares
 app.use(express.json()); // parses JSON requests
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: ["https://sfwn-real-estate.netlify.app"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+// app.use(
+//   cors({
+//     origin: true,
+//     credentials: true,
+//   }),
+// );
 
 // import response handlers
 const { formatApiResponse } = require("./utils/response");
@@ -41,8 +48,8 @@ app.all("*", (req, res, next) => {
         404,
         STATUS_TEXT.ERROR,
         "page not found",
-        "the page you are trying to access is not found"
-      )
+        "the page you are trying to access is not found",
+      ),
     );
 });
 
@@ -58,8 +65,8 @@ app.use((error, req, res, next) => {
         error.statusCode || 500,
         error.STATUS_TEXT,
         error.message,
-        "🔻 GLOBAL ERROR"
-      )
+        "🔻 GLOBAL ERROR",
+      ),
     );
 });
 
