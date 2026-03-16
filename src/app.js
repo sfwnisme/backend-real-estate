@@ -14,13 +14,13 @@ connectDB();
 
 // Middlewares
 app.use(express.json()); // parses JSON requests
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
-
+const corsOptions = {
+  origin: ["https://sfwn-real-estate.netlify.app"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 // import response handlers
 const { formatApiResponse } = require("./utils/response");
 const { setUpAppRoutes } = require("./routes/setUpAppRoutes");
