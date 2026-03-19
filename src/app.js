@@ -58,7 +58,7 @@ app.use((error, req, res, next) => {
         error.statusCode || 500,
         error.STATUS_TEXT,
         error.message,
-        "🔻 GLOBAL ERROR"
+        error.stack
       )
     );
 });
