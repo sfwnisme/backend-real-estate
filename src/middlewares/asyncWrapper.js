@@ -2,6 +2,7 @@
 // HOC function handles the catch() block
 // to avoid redundant code
 //---------------------
+const utils = require("../utils/utils");
 module.exports = (asyncFunction) => {
   // the application req, res, and next
   return (req, res, next) => {
@@ -9,7 +10,7 @@ module.exports = (asyncFunction) => {
     // its params come from the application
     asyncFunction(req, res, next).catch((error) => {
       // the next() middleware is the application's not the asyncFunction's
-      next({error});
+      next(error);
     });
   };
 };
