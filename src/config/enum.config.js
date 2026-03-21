@@ -63,6 +63,7 @@ enums.FILES_CONFIGS = {
     DEFAULT: "default/",
     IMAGES: "images/",
     PROPERTIES: "properties/",
+    SITE_INFO: "site-info/",
     SERVICES: "services/",
     BLOG: "blog/",
   },
@@ -82,4 +83,45 @@ enums.MODELS = {
   BLOG_POST: "BlogPost",
   USER: "User",
   SITE_INFO: "SiteInfo",
+};
+
+enums.IMAGE_ROLES = {
+  SITE_INFO: {
+    ICON: "icon",
+    LOGO: "logo",
+    OG_IMAGE: "og-image",
+  },
+  // future: PROPERTY: { FLOOR_PLAN: "floor-plan" }, etc.
+};
+
+enums.IMAGE_TAGS = {
+  THEME_DARK: "theme_dark",
+  THEME_DEFAULT: "theme_default",
+};
+
+enums.IMAGE_ROLE_CONSTRAINTS = {
+  icon: {
+    mimeTypes: ["image/png", "image/x-icon", "image/vnd.microsoft.icon"],
+    maxFileSize: 1,
+    dimensions: [
+      { width: 16, height: 16 },
+      { width: 32, height: 32 },
+      { width: 48, height: 48 },
+      { width: 192, height: 192 },
+    ],
+  },
+  logo: {
+    mimeTypes: ["image/png", "image/svg+xml"],
+    maxFileSize: 2,
+    minWidth: 200,
+    minHeight: 200,
+    maxWidth: 500,
+    maxHeight: 500,
+  },
+  "og-image": {
+    mimeTypes: ["image/jpeg", "image/png", "image/webp"],
+    maxFileSize: 3,
+    recommendedWidth: 1200,
+    recommendedHeight: 630,
+  },
 };

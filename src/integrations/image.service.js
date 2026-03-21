@@ -28,6 +28,9 @@ imageServices.createImage = async (
   bucketDir = FILES_CONFIGS.DIRS.DEFAULT,
   isTemp = true,
   isFeatured = false,
+  role = null,
+  tag = null,
+  alt = null,
 ) => {
   console.log(
     "imageServices.createImage info: ",
@@ -102,6 +105,9 @@ imageServices.createImage = async (
       },
       isFeatured,
       isTemp,
+      role,
+      tag,
+      alt,
     };
 
     const addImagesToDB = new Image(imageObject);
