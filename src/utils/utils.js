@@ -96,6 +96,7 @@ utils.awsS3ImageUrl = (paramsKey) => {
 };
 
 utils.parseStackTrace = (stack) => {
+  if (!stack) return { message: "unknown error (no stack trace)", frames: [] };
   const lines = stack.split("\n");
   const message = lines[0]; // "Error: token is required"
 
