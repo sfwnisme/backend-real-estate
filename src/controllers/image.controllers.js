@@ -13,7 +13,8 @@ const {
   createImage,
   deleteImageFromDBAndBucket,
 } = require("../integrations/image.service.js");
-const { default: mongoose } = require("mongoose");
+const { createSiteInfoImage } = require("../services/image.service.js");
+
 const { putObject } = require("../integrations/aws-s3.service.js");
 
 const appError = new AppError();
@@ -30,8 +31,8 @@ imageControllers.getImages = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "images fetched successfully",
-        images
-      )
+        images,
+      ),
     );
 });
 
@@ -51,8 +52,8 @@ imageControllers.getImage = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "images fetched successfully",
-        image
-      )
+        image,
+      ),
     );
 });
 
@@ -71,8 +72,8 @@ imageControllers.createImage = asyncWrapper(async (req, res, next) => {
         formatApiResponse(
           400,
           STATUS_TEXT.ERROR,
-          "file not found, object key must be 'file', or you have to add image"
-        )
+          "file not found, object key must be 'file', or you have to add image",
+        ),
       );
   }
   console.log("multer file", file);
@@ -117,8 +118,8 @@ imageControllers.createImage = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The image created successfully",
-        imageFromDB
-      )
+        imageFromDB,
+      ),
     );
 });
 
@@ -133,8 +134,8 @@ imageControllers.createImages = asyncWrapper(async (req, res, next) => {
         formatApiResponse(
           400,
           STATUS_TEXT.ERROR,
-          "files not found, object key must be 'files', or you have to add images"
-        )
+          "files not found, object key must be 'files', or you have to add images",
+        ),
       );
   }
 
@@ -156,8 +157,8 @@ imageControllers.createImages = asyncWrapper(async (req, res, next) => {
         201,
         STATUS_TEXT.SUCCESS,
         "The image created successfully",
-        awsS3ImagesResponse
-      )
+        awsS3ImagesResponse,
+      ),
     );
 });
 
@@ -167,7 +168,7 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
 
   const images = await Image.find(
     { ownerId: propertyId, ownerModel: model },
-    { __v: false }
+    { __v: false },
   );
 
   if (images.length === 0) {
@@ -178,8 +179,8 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
           404,
           STATUS_TEXT.FAIL,
           "property images not found",
-          images
-        )
+          images,
+        ),
       );
   }
 
@@ -190,8 +191,52 @@ imageControllers.getPropertyImages = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "property images fetched successfully",
-        images
-      )
+        images,
+      ),
+    );
+});
+
+imageControllers.getSiteInfoImages = asyncWrapper(async (req, res, next) => {
+  const { role, tag } = req.query;
+  const { siteInfo } = req;
+  console.log("siteInfo", {
+    role,
+    tag,
+    siteInfo,
+  });
+  const filter = { ownerId: siteInfo._id, ownerModel: MODELS.SITE_INFO };
+  if (role) filter.role = role;
+  if (tag) filter.tag = tag;
+
+  const images = await Image.find(filter, { __v: false });
+
+  res
+    .status(200)
+    .json(
+      formatApiResponse(
+        200,
+        STATUS_TEXT.SUCCESS,
+        "site info images fetched successfully",
+        images,
+      ),
+    );
+});
+
+imageControllers.createSiteInfoImage = asyncWrapper(async (req, res, next) => {
+  const { file } = req;
+  const { role, tag, alt } = req.siteInfoImageMeta;
+
+  const createImageRes = await createSiteInfoImage(file, role, tag, alt);
+
+  res
+    .status(createImageRes.status)
+    .json(
+      formatApiResponse(
+        createImageRes.status,
+        createImageRes.statusText,
+        createImageRes.msg,
+        createImageRes.data || createImageRes.error,
+      ),
     );
 });
 
@@ -213,7 +258,7 @@ imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
     ownerModel,
     bucketDir,
     isTemp,
-    isFeatured
+    isFeatured,
   );
 
   res
@@ -223,10 +268,11 @@ imageControllers.createPropertyImage = asyncWrapper(async (req, res, next) => {
         createImageRes.status,
         createImageRes.statusText,
         createImageRes.msg,
-        createImageRes.data || createImageRes.error
-      )
+        createImageRes.data || createImageRes.error,
+      ),
     );
 });
+
 imageControllers.createTempPropertyImage = asyncWrapper(
   async (req, res, next) => {
     const {
@@ -244,7 +290,7 @@ imageControllers.createTempPropertyImage = asyncWrapper(
       tempOwnerId,
       ownerModel,
       bucketDir,
-      isTemp
+      isTemp,
     );
     res
       .status(createImageRes.status)
@@ -253,10 +299,10 @@ imageControllers.createTempPropertyImage = asyncWrapper(
           createImageRes.status,
           createImageRes.statusText,
           createImageRes.msg,
-          createImageRes.data || createImageRes.error
-        )
+          createImageRes.data || createImageRes.error,
+        ),
       );
-  }
+  },
 );
 
 imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
@@ -265,7 +311,7 @@ imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
   console.log("pass", blogPostId);
   const image = await Image.findOne(
     { ownerId: blogPostId, ownerModel: model },
-    { __v: false }
+    { __v: false },
   );
 
   console.log("------blog post image", image);
@@ -277,8 +323,8 @@ imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
           404,
           STATUS_TEXT.FAIL,
           "blog post image not found",
-          image
-        )
+          image,
+        ),
       );
   }
 
@@ -289,8 +335,8 @@ imageControllers.getBlogPostImage = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "blog post image fetched successfully",
-        image
-      )
+        image,
+      ),
     );
 });
 
@@ -311,7 +357,7 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
     ownerModel,
     bucketDir,
     isTemp,
-    isFeatured
+    isFeatured,
   );
 
   res
@@ -321,8 +367,8 @@ imageControllers.createBlogPostImage = asyncWrapper(async (req, res, next) => {
         createImageRes.status,
         createImageRes.statusText,
         createImageRes.msg,
-        createImageRes.data || createImageRes.error
-      )
+        createImageRes.data || createImageRes.error,
+      ),
     );
 });
 
@@ -343,7 +389,7 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
       tempOwnerId,
       ownerModel,
       bucketDir,
-      isTemp
+      isTemp,
     );
     res
       .status(createImageRes.status)
@@ -352,10 +398,10 @@ imageControllers.createTempBlogPostImage = asyncWrapper(
           createImageRes.status,
           createImageRes.statusText,
           createImageRes.msg,
-          createImageRes.data || createImageRes.error
-        )
+          createImageRes.data || createImageRes.error,
+        ),
       );
-  }
+  },
 );
 
 imageControllers.makeImageFeatured = asyncWrapper(async (req, res, next) => {
@@ -385,8 +431,8 @@ imageControllers.makeImageFeatured = asyncWrapper(async (req, res, next) => {
         200,
         STATUS_TEXT.SUCCESS,
         "image made featured successfully",
-        newFeaturedImage
-      )
+        newFeaturedImage,
+      ),
     );
 });
 
@@ -413,8 +459,8 @@ imageControllers.deleteImage = asyncWrapper(async (req, res, next) => {
         imageToDelete.status,
         STATUS_TEXT.SUCCESS,
         `deleted successfully`,
-        imageToDelete
-      )
+        imageToDelete,
+      ),
     );
 });
 
@@ -423,14 +469,14 @@ imageControllers.deleteTempImages = asyncWrapper(async (req, res, next) => {
   const tempImages = await Image.find({ isTemp: true });
   console.log("temp images =>>>>>", tempImages);
   const deleteTempImagesPromises = tempImages.map((img) =>
-    deleteImageFromDBAndBucket(String(img._id))
+    deleteImageFromDBAndBucket(String(img._id)),
   );
   console.log("array images", deleteTempImagesPromises);
   const tempImagesDeletion = await Promise.all(deleteTempImagesPromises);
 
   // Check if any deletion failed
   const noImagesFound = tempImagesDeletion.filter(
-    (result) => result.statusText !== STATUS_TEXT.SUCCESS
+    (result) => result.statusText !== STATUS_TEXT.SUCCESS,
   );
 
   return res.status(200).json(
@@ -438,7 +484,7 @@ imageControllers.deleteTempImages = asyncWrapper(async (req, res, next) => {
       200, // to return the response
       STATUS_TEXT.SUCCESS,
       `deleted successfully`,
-      { deleted: tempImagesDeletion, notFound: noImagesFound }
-    )
+      { deleted: tempImagesDeletion, notFound: noImagesFound },
+    ),
   );
 });

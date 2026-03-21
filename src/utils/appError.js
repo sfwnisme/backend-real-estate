@@ -7,6 +7,7 @@ class AppError extends Error {
     this.statusCode = statusCode;
     this.statusText = statusText;
     this.message = message;
+    Error.captureStackTrace(this, this.create);
     return this
   }
 }

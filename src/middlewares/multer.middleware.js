@@ -1,6 +1,7 @@
 const multer = require("multer");
-const path = require("path");
-const { FILES_CONFIGS } = require("../config/enum.config");
+const { FILES_CONFIGS, IMAGE_ROLE_CONSTRAINTS } = require("../config/enum.config");
+
+const multerMiddleware = module.exports;
 
 const storage = multer.memoryStorage();
 
@@ -20,10 +21,26 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({
+multerMiddleware.upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: FILES_CONFIGS.IMAGE.MAX_SIZE * 1024 * 1024 }, // limit 1MB per image file
+  limits: { fileSize: FILES_CONFIGS.IMAGE.MAX_SIZE * 1024 * 1024 },
 });
 
-module.exports = upload;
+multerMiddleware.createRoleUpload = (role) => {
+  const constraints = IMAGE_ROLE_CONSTRAINTS[role];
+  return multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+      if (!constraints.mimeTypes.includes(file.mimetype)) {
+        const error = new Error(
+          `Invalid file type for ${role}. Allowed: ${constraints.mimeTypes.join(", ")}`
+        );
+        error.status = 400;
+        return cb(error);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: constraints.maxFileSize * 1024 * 1024 },
+  });
+};

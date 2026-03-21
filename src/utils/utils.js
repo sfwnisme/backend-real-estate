@@ -94,3 +94,29 @@ utils.awsS3ImageUrl = (paramsKey) => {
   const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_S3_BUCKET_REGION}.amazonaws.com/${paramsKey}`;
   return url;
 };
+
+utils.parseStackTrace = (stack) => {
+  if (!stack) return { message: "unknown error (no stack trace)", frames: [] };
+  const lines = stack.split("\n");
+  const message = lines[0]; // "Error: token is required"
+
+  const frames = lines
+    .slice(1)
+    .filter((line) => !line.includes("node_modules"))
+    .map((line) => {
+      const match = line
+        .trim()
+        .match(/^at (.+?) \((.+):(\d+):(\d+)\)$|^at (.+):(\d+):(\d+)$/);
+      if (!match) return null;
+
+      return {
+        fn: match[1] || "<anonymous>",
+        file: match[2] || match[5],
+        line: Number(match[3] || match[6]),
+        col: Number(match[4] || match[7]),
+      };
+    })
+    .filter(Boolean);
+
+  return { message, frames };
+};
